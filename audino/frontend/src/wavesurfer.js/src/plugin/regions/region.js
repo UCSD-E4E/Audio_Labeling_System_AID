@@ -40,6 +40,8 @@ export class Region {
         };
         this.handleLeftEl = null;
         this.handleRightEl = null;
+        this.handleTopE1 = null;
+        this.handleBotE1 = null;
         this.data = params.data || {};
         this.attributes = params.attributes || {};
 
@@ -212,9 +214,17 @@ export class Region {
             this.handleRightEl = regionEl.appendChild(
                 document.createElement('handle')
             );
+            this.handleTopE1 = regionEl.appendChild(
+                document.createElement('handle')
+            );
+            this.handleBotE1 = regionEl.appendChild(
+                document.createElement('handle')
+            );
 
             this.handleLeftEl.className = 'wavesurfer-handle wavesurfer-handle-start';
             this.handleRightEl.className = 'wavesurfer-handle wavesurfer-handle-end';
+            this.handleTopE1.className = 'wavesurfer-handle wavesurfer-handle-top';
+            this.handleBotE1.className = 'wavesurfer-handle wavesurfer-handle-bottom';
 
             // Default CSS properties for both handles.
             const css = {
@@ -226,6 +236,16 @@ export class Region {
                 backgroundColor: 'rgba(0, 0, 0, 1)'
             };
 
+            const row_css = {
+                cursor: 'row-resize',
+                position: 'absolute',
+                width: '100%',
+                left: '0px',
+                height: '2px',
+                backgroundColor: 'rgba(0, 0, 0, 1)'
+            };
+
+
             // Merge CSS properties per handle.
             const handleLeftCss =
                 this.handleStyle.left !== 'none'
@@ -233,12 +253,17 @@ export class Region {
                     : null;
             const handleRightCss =
                 this.handleStyle.right !== 'none'
-                    ? Object.assign(
-                        { right: '0px' },
-                        css,
-                        this.handleStyle.right
-                    )
+                    ? Object.assign({ right: '0px' }, css, this.handleStyle.right)
                     : null;
+            const handleTopCss =
+                this.handleStyle.top !== 'none'
+                    ? Object.assign({ top: '0px' }, row_css, this.handleStyle.top)
+                    : null;
+            const handleBotCss =
+                this.handleStyle.bot !== 'none'
+                    ? Object.assign({ bottom: '0px'}, row_css, this.handleStyle.bot)
+                    : null;
+
 
             if (handleLeftCss) {
                 this.style(this.handleLeftEl, handleLeftCss);
@@ -246,6 +271,12 @@ export class Region {
 
             if (handleRightCss) {
                 this.style(this.handleRightEl, handleRightCss);
+            }
+            if (handleTopCss) {
+                this.style(this.handleTopE1, handleTopCss);
+            }
+            if (handleBotCss) {
+                this.style(this.handleBotE1, handleBotCss);
             }
         }
 
@@ -552,7 +583,7 @@ export class Region {
                 this.isResizing = true;
                 resize = e.target.classList.contains('wavesurfer-handle-start')
                     ? 'start'
-                    : 'end';
+                    : 'end' ? 'top' : 'bot';
             } else {
                 this.isDragging = true;
                 drag = true;
@@ -771,8 +802,11 @@ export class Region {
 
     updateHandlesResize(resize) {
         const cursorStyle = resize ? 'col-resize' : 'auto';
+        const cursorStyle_row = resize ? 'row-resize' : 'auto';
 
         this.handleLeftEl && this.style(this.handleLeftEl, { cursor: cursorStyle });
         this.handleRightEl && this.style(this.handleRightEl, { cursor: cursorStyle });
+        this.handleBotE1 && this.style(this.handleBotE1, { cursor: cursorStyle_row });
+        this.handleTopE1 && this.style(this.handleTopE1, { cursor: cursorStyle_row });
     }
 }
