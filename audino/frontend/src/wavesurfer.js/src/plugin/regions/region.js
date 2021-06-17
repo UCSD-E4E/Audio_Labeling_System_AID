@@ -15,9 +15,12 @@ export class Region {
         this.util = ws.util;
         this.style = this.util.style;
         this.regionsUtil = regionsUtils;
-
+        // It assumes the minLength parameter value, or the regionsMinLength parameter value, if the first one not provided
+        this.minLength = params.minLength;
         this.id = params.id == null ? ws.util.getId() : params.id;
         this.start = Number(params.start) || 0;
+        this.top = Number(params.top) || 0;
+        this.bot = Number(params.bot) || 0;
         this.end =
             params.end == null
                 ? // small marker-like region
@@ -36,7 +39,9 @@ export class Region {
         // no styling or can be assigned an object containing CSS properties.
         this.handleStyle = params.handleStyle || {
             left: {},
-            right: {}
+            right: {},
+            top: {},
+            bot: {}
         };
         this.handleLeftEl = null;
         this.handleRightEl = null;
@@ -46,13 +51,13 @@ export class Region {
         this.attributes = params.attributes || {};
 
         this.maxLength = params.maxLength;
-        // It assumes the minLength parameter value, or the regionsMinLength parameter value, if the first one not provided
-        this.minLength = params.minLength;
+
         this._onRedraw = () => this.updateRender();
 
         this.scroll = params.scroll !== false && ws.params.scrollParent;
         this.scrollSpeed = params.scrollSpeed || 1;
         this.scrollThreshold = params.scrollThreshold || 10;
+        this.maxFrequency = params.maxFrequency || 24.0;
         // Determines whether the context menu is prevented from being opened.
         this.preventContextMenu =
             params.preventContextMenu === undefined
@@ -63,6 +68,7 @@ export class Region {
         let channelIdx =
             params.channelIdx == null ? -1 : parseInt(params.channelIdx);
         this.regionHeight = '100%';
+        this.maxHeight = 254;
         this.marginTop = '0px';
 
         if (channelIdx !== -1) {
@@ -96,6 +102,12 @@ export class Region {
         }
         if (params.end != null) {
             this.end = Number(params.end);
+        }
+        if (params.top != null) {
+            this.top = Number(params.top);
+        }
+        if (params.bot != null) {
+            this.bot = Number(params.bot);
         }
         if (params.loop != null) {
             this.loop = Boolean(params.loop);
@@ -303,11 +315,17 @@ export class Region {
         return this.wavesurfer.drawer.width / this.wavesurfer.params.pixelRatio;
     }
 
+    getHeight() {
+        return this.wavesurfer.drawer.height / this.wavesurfer.params.pixelRatio;
+    }
+
     /* Update element's position, width, color. */
     updateRender(color=this.color) {
         // duration varies during loading process, so don't overwrite important data
         const dur = this.wavesurfer.getDuration();
+        const max_Height = this.maxHeight;
         const width = this.getWidth();
+        const height = this.getHeight();
 
         let startLimited = this.start;
         let endLimited = this.end;
@@ -333,10 +351,14 @@ export class Region {
             // no gaps appear between regions.
             const left = Math.round((startLimited / dur) * width);
             const regionWidth = Math.round((endLimited / dur) * width) - left;
-
+            const top = this.top;
+            const bot = 0;
+            const regionHeight =  max_Height;//this.wrapper.style.height - this.top - this.bt
             this.style(this.element, {
                 left: left + 'px',
                 width: regionWidth + 'px',
+                top: top + 'px',
+                height: (regionHeight - top - bot) + 'px',
                 backgroundColor: color,
                 cursor: this.drag ? 'move' : 'default'
             });
@@ -443,6 +465,7 @@ export class Region {
         const scrollSpeed = this.scrollSpeed;
         const scrollThreshold = this.scrollThreshold;
         let startTime;
+        let currTop;
         let touchId;
         let drag;
         let maxScroll;
@@ -452,11 +475,13 @@ export class Region {
         let wrapperRect;
         let regionLeftHalfTime;
         let regionRightHalfTime;
+        let max_Height = this.maxHeight;
 
         // Scroll when the user is dragging within the threshold
         const edgeScroll = (e) => {
             //this.wavesurfer.fireEvent('region-change', this)
             const duration = this.wavesurfer.getDuration();
+
             if (!scrollDirection || (!drag && !resize)) {
                 return;
             }
@@ -470,9 +495,16 @@ export class Region {
             let time = this.regionsUtil.getRegionSnapToGridValue(
                 this.wavesurfer.drawer.handleEvent(e) * duration
             );
+            
+            let frequencyTop  = (Number(this.wrapper.style.top.replace("px", "")));
+
+            let range = this.regionsUtil.getRegionSnapToGridValue( this.wavesurfer.drawer.handleEventVertical(e, false, max_Height) * max_Height);
+            ////console.log("range : " + range)
+            let frequencyBot = (this.handleBotE1.style.bottom);
 
             if (drag) {
                 // Considering the point of contact with the region while edgescrolling
+                ////console.log("hello")
                 if (scrollDirection === -1) {
                     regionHalfTimeWidth = regionLeftHalfTime * this.wavesurfer.params.minPxPerSec;
                     distanceBetweenCursorAndWrapperEdge = x - wrapperRect.left;
@@ -504,6 +536,16 @@ export class Region {
 
                     if (time > duration) {
                         time = duration;
+                    }
+                }
+                else if (resize === 'top') {
+                    if (range > max_Height - minLength) {
+                        range = max_Height - minLength;
+                        //adjustment = scrollSpeed * scrollDirection;
+                    }
+
+                    if (range < 0) {
+                        range = 0;
                     }
                 }
             }
@@ -538,11 +580,21 @@ export class Region {
                 this.wrapper.scrollLeft = scrollLeft = calculatedRight;
             }
 
-            const delta = time - startTime;
-            startTime = time;
+            //console.log("LOOK HERE")
+            if (resize === 'top') {
+                const delta = range - currTop
+                currTop = range;
+                
+                // Continue dragging or resizing
+                drag ? this.onDrag(delta) : this.onResize(delta, resize);
+            } else {
+                const delta = time - startTime;
+                startTime = time;
+                // Continue dragging or resizing
+                drag ? this.onDrag(delta) : this.onResize(delta, resize);
+            }
+            
 
-            // Continue dragging or resizing
-            drag ? this.onDrag(delta) : this.onResize(delta, resize);
 
             // Repeat
             window.requestAnimationFrame(() => {
@@ -568,7 +620,7 @@ export class Region {
             startTime = this.regionsUtil.getRegionSnapToGridValue(
                 this.wavesurfer.drawer.handleEvent(e, true) * duration
             );
-
+            currTop = this.regionsUtil.getRegionSnapToGridValue( this.wavesurfer.drawer.handleEventVertical(e, false, max_Height) * max_Height);
             // Store the selected point of contact when we begin dragging
             regionLeftHalfTime = startTime - this.start;
             regionRightHalfTime = this.end - startTime;
@@ -581,9 +633,15 @@ export class Region {
             this.isDragging = false;
             if (e.target.tagName.toLowerCase() === 'handle') {
                 this.isResizing = true;
-                resize = e.target.classList.contains('wavesurfer-handle-start')
-                    ? 'start'
-                    : 'end' ? 'top' : 'bot';
+                if (e.target.classList.contains('wavesurfer-handle-start')) {
+                    resize = 'start'
+                } else if (e.target.classList.contains('wavesurfer-handle-end')) {
+                    resize = 'end'
+                } else if (e.target.classList.contains('wavesurfer-handle-top')) {
+                    resize = 'top'
+                } else if (e.target.classList.contains('wavesurfer-handle-bottom')) {
+                    resize = 'bottom'
+                } 
             } else {
                 this.isDragging = true;
                 drag = true;
@@ -629,6 +687,8 @@ export class Region {
             let time = this.regionsUtil.getRegionSnapToGridValue(
                 this.wavesurfer.drawer.handleEvent(e) * duration
             );
+            //console.log("time: " +time )
+
 
             if (drag) {
                 // To maintain relative cursor start point while dragging
@@ -642,6 +702,11 @@ export class Region {
                 }
             }
 
+            let frequencyTop  = (Number(this.handleTopE1.style.top.replace("px", "")));
+            let range = this.regionsUtil.getRegionSnapToGridValue( this.wavesurfer.drawer.handleEventVertical(e, false, max_Height) * max_Height);
+            console.log("range : " + range)
+            let frequencyBot = (Number(this.handleBotE1.style.top.replace("px", "")));
+
             if (resize) {
                 // To maintain relative cursor start point while resizing
                 // we have to handle for minLength
@@ -651,12 +716,20 @@ export class Region {
                 }
 
                 if (resize === 'start') {
-                    if (time > this.end - minLength) {
-                        time = this.end - minLength;
+                    if (frequencyTop > this.bot - minLength) {
+                        frequencyTop = this.bot - minLength;
                     }
 
-                    if (time < 0) {
-                        time = 0;
+                    if (frequencyTop < 0) {
+                        frequencyTop = 0;
+                    }
+                } else if (resize === 'top') {
+                    if (range > max_Height - minLength) {
+                        range = max_Height - minLength;
+                    }
+
+                    if (range < 0) {
+                        range = 0;
                     }
                 } else if (resize === 'end') {
                     if (time < this.start + minLength) {
@@ -681,6 +754,14 @@ export class Region {
             // Resize
             if (this.resize && resize) {
                 updated = updated || !!delta;
+                //console.log("hello there, code should be here: " + resize)
+                if (resize === 'top') {     
+                    //console.log("Top_delta: " + (frequencyTop - currTop))  
+                    delta = range - currTop
+                    currTop = range
+                    console.log(delta, currTop)
+                    this.onResize(delta, resize);
+                }
                 this.onResize(delta, resize);
             }
 
@@ -766,7 +847,11 @@ export class Region {
      * @param {string} direction 'start 'or 'end'
      */
     onResize(delta, direction) {
+        //console.log("THE CODE IS RUNNING HERE: " + direction + " " + delta)
         const duration = this.wavesurfer.getDuration();
+        const maxFrequency = this.maxFrequency;
+        const max_Height = this.maxHeight;
+
         if (direction === 'start') {
             // Check if changing the start by the given delta would result in the region being smaller than minLength
             // Ignore cases where we are making the region wider rather than shrinking it
@@ -782,7 +867,8 @@ export class Region {
                 start: Math.min(this.start + delta, this.end),
                 end: Math.max(this.start + delta, this.end)
             });
-        } else {
+        } 
+        else if (direction === 'end') {
             // Check if changing the end by the given delta would result in the region being smaller than minLength
             // Ignore cases where we are making the region wider rather than shrinking it
             if (delta < 0 && this.end + delta - this.start < this.minLength) {
@@ -798,6 +884,28 @@ export class Region {
                 end: Math.max(this.end + delta, this.start)
             });
         }
+
+        else if (direction === 'top') {
+            delta /= 2;
+            const bottom = max_Height - this.bot;
+            // Check if changing the start by the given delta would result in the region being smaller than minLength
+            // Ignore cases where we are making the region wider rather than shrinking it
+            if (delta > 0 && bottom - (this.top + delta) < this.minLength) {
+                delta = bottom  - this.minLength - this.top;
+                //console.log("THIS WAY")
+            }
+
+            if (delta < 0 && (this.top + delta) < 0) {
+                delta = this.top * -1;
+            }
+            console.log("altered delta: " + delta)
+            //console.log("old top: " +this.top)
+            this.update({
+                top: Math.min(this.top + delta, bottom),
+                bot: max_Height - Math.max(this.top + delta, bottom)
+            });
+            //console.log("new top: " + this.top)
+        } 
     }
 
     updateHandlesResize(resize) {
