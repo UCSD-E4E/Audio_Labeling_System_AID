@@ -438,8 +438,8 @@ class Annotate_C extends React.Component {
 
   handleSegmentSave(e) {
     const { selectedSegment, segmentationUrl } = this.state;
-    const { start, end } = selectedSegment;
-
+    const { start, end, regionTopFrequency, regionBotFrequency } = selectedSegment;
+    console.log("frequencies: " + regionTopFrequency + ", " + regionBotFrequency)
     const {
       transcription,
       annotations,
@@ -455,6 +455,8 @@ class Annotate_C extends React.Component {
         data: {
           start,
           end,
+          regionTopFrequency,
+          regionBotFrequency,
           transcription,
           annotations,
         },
@@ -522,7 +524,8 @@ class Annotate_C extends React.Component {
       try {
         const segment = wavesurfer.regions.list[segment_name];
         console.log(segment_name, segment);
-        const { start, end } = segment;
+        const { start, end, regionTopFrequency, regionBotFrequency } = segment;
+        console.log("frequencies: " + regionTopFrequency + ", " + regionBotFrequency)
         const {
           transcription = "",
           annotations = "",
@@ -543,6 +546,8 @@ class Annotate_C extends React.Component {
             data: {
               start,
               end,
+              regionTopFrequency,
+              regionBotFrequency,
               transcription,
               annotations,
             },

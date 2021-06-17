@@ -65,7 +65,9 @@ export class Region {
         this.scroll = params.scroll !== false && ws.params.scrollParent;
         this.scrollSpeed = params.scrollSpeed || 1;
         this.scrollThreshold = params.scrollThreshold || 10;
-        this.maxFrequency = params.maxFrequency || 24.0;
+        this.maxFrequency = params.maxFrequency || 24000;
+        this.regionTopFrequency = null;
+        this.regionBotFrequency = null;
         // Determines whether the context menu is prevented from being opened.
         this.preventContextMenu =
             params.preventContextMenu === undefined
@@ -416,15 +418,21 @@ export class Region {
             const regionWidth = Math.round((endLimited / dur) * width) - left;
             const top = this.top;
             const bot = this.bot;
-            const regionHeight =  max_Height;//this.wrapper.style.height - this.top - this.bt
+            const regionHeight =  max_Height  - top - bot;//this.wrapper.style.height - this.top - this.bt
             this.style(this.element, {
                 left: left + 'px',
                 width: regionWidth + 'px',
                 top: top + 'px',
-                height: (regionHeight - top - bot) + 'px',
+                height: (regionHeight) + 'px',
                 backgroundColor: color,
                 cursor: this.drag ? 'move' : 'default'
             });
+
+            const pixelToFrequency = (this.maxFrequency/this.maxHeight)
+            // frequency = 24000 - 24000/254x
+            this.regionTopFrequency = this.maxFrequency - this.top * pixelToFrequency;
+            this.regionBotFrequency = this.maxFrequency - (this.top + regionHeight) * pixelToFrequency;
+            
 
             for (const attrname in this.attributes) {
                 this.element.setAttribute(
