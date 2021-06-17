@@ -41,12 +41,20 @@ export class Region {
             left: {},
             right: {},
             top: {},
-            bot: {}
+            bot: {},
+            topRight: {},
+            topLeft: {},
+            bottomRight: {},
+            bottomLeft: {},
         };
         this.handleLeftEl = null;
         this.handleRightEl = null;
         this.handleTopE1 = null;
         this.handleBotE1 = null;
+        this.handleTopRightE1 = null;
+        this.handleTopLeftE1 = null;
+        this.handleBottomRightE1 = null;
+        this.handleBottomLeftE1 = null;
         this.data = params.data || {};
         this.attributes = params.attributes || {};
 
@@ -233,11 +241,28 @@ export class Region {
             this.handleBotE1 = regionEl.appendChild(
                 document.createElement('handle')
             );
+            this.handleTopRightE1 = regionEl.appendChild(
+                document.createElement('handle')
+            );
+            this.handleTopLeftE1 = regionEl.appendChild(
+                document.createElement('handle')
+            )
+            this.handleBottomRightE1 = regionEl.appendChild(
+                document.createElement('handle')
+            );
+            this.handleBottomLeftE1 = regionEl.appendChild(
+                document.createElement('handle')
+            )
 
             this.handleLeftEl.className = 'wavesurfer-handle wavesurfer-handle-start';
             this.handleRightEl.className = 'wavesurfer-handle wavesurfer-handle-end';
             this.handleTopE1.className = 'wavesurfer-handle wavesurfer-handle-top';
             this.handleBotE1.className = 'wavesurfer-handle wavesurfer-handle-bottom';
+            this.handleTopRightE1.className = 'wavesurfer-handle wavesurfer-handle-top-right';
+            this.handleTopLeftE1.className = 'wavesurfer-handle wavesurfer-handle-top-left';
+            this.handleBottomRightE1.className = 'wavesurfer-handle wavesurfer-handle-bottom-right';
+            this.handleBottomLeftE1.className = 'wavesurfer-handle wavesurfer-handle-bottom-left';
+
 
             // Default CSS properties for both handles.
             const css = {
@@ -258,6 +283,15 @@ export class Region {
                 backgroundColor: 'rgba(0, 0, 0, 1)'
             };
 
+            const corner_css = {
+                cursor: 'row-resize',
+                position: 'absolute',
+                width: '4px',
+                height: '4px',
+                backgroundColor: 'rgba(0, 0, 0, 1)',
+                zIndex: 2,
+            }
+
 
             // Merge CSS properties per handle.
             const handleLeftCss =
@@ -276,6 +310,22 @@ export class Region {
                 this.handleStyle.bot !== 'none'
                     ? Object.assign({ bottom: '0px'}, row_css, this.handleStyle.bot)
                     : null;
+            const handleTopRightCss =
+                this.handleStyle.topRight !== 'none'
+                    ? Object.assign({ top: '-1px', right: '-1px'}, corner_css, this.handleStyle.bot)
+                    : null;
+            const handleTopLeftCss =
+                this.handleStyle.topLeft !== 'none'
+                    ? Object.assign({ top: '-1px', left: '-1px'}, corner_css, this.handleStyle.bot)
+                    : null;
+            const handleBottomRightCss =
+                this.handleStyle.bottomRight !== 'none'
+                    ? Object.assign({ bottom: '-1px', right: '-1px'}, corner_css, this.handleStyle.bot)
+                    : null;
+            const handleBottomLeftCss =
+                this.handleStyle.BottomLeft !== 'none'
+                    ? Object.assign({ bottom: '-1px', left: '-1px'}, corner_css, this.handleStyle.bot)
+                    : null;
 
 
             if (handleLeftCss) {
@@ -290,6 +340,18 @@ export class Region {
             }
             if (handleBotCss) {
                 this.style(this.handleBotE1, handleBotCss);
+            }
+            if (handleTopRightCss) {
+                this.style(this.handleTopRightE1, handleTopRightCss);
+            }
+            if (handleTopLeftCss) {
+                this.style(this.handleTopLeftE1, handleTopLeftCss);
+            }
+            if (handleTopRightCss) {
+                this.style(this.handleBottomRightE1, handleBottomRightCss);
+            }
+            if (handleTopLeftCss) {
+                this.style(this.handleBottomLeftE1, handleBottomLeftCss);
             }
         }
 
@@ -597,11 +659,7 @@ export class Region {
             const deltaY = time - startTime;
             startTime = time;
             console.log("LOOK HERE")
-            if (resize === 'top' || resize === 'bottom') {
-                drag ? this.onDrag(deltaX, deltaY) : this.onResize(deltaY, resize);
-            } else {
-                drag ? this.onDrag(deltaX, deltaY) : this.onResize(deltaX, resize);
-            }
+            drag ? this.onDrag(deltaX, deltaY) : this.onResize(deltaX, deltaY, resize);
             
 
 
@@ -651,6 +709,18 @@ export class Region {
                 } else if (e.target.classList.contains('wavesurfer-handle-bottom')) {
                     resize = 'bottom'
                 } 
+                else if (e.target.classList.contains('wavesurfer-handle-top-right')) {
+                    resize = 'top-right'
+                }
+                else if (e.target.classList.contains('wavesurfer-handle-top-left')) {
+                    resize = 'top-left'
+                }
+                else if (e.target.classList.contains('wavesurfer-handle-bottom-right')) {
+                    resize = 'bottom-right'
+                }
+                else if (e.target.classList.contains('wavesurfer-handle-bottom-left')) {
+                    resize = 'bottom-left'
+                }
             } else {
                 this.isDragging = true;
                 drag = true;
@@ -711,10 +781,7 @@ export class Region {
                 }
             }
 
-            let frequencyTop  = (Number(this.handleTopE1.style.top.replace("px", "")));
             let range = this.regionsUtil.getRegionSnapToGridValue( this.wavesurfer.drawer.handleEventVertical(e, false, max_Height) * max_Height);
-            console.log("range : " + range)
-            let frequencyBot = (Number(this.handleBotE1.style.top.replace("px", "")));
 
             if (resize) {
                 // To maintain relative cursor start point while resizing
@@ -724,15 +791,7 @@ export class Region {
                     minLength = 0;
                 }
 
-                if (resize === 'start') {
-                    if (time > this.end - minLength) {
-                        time = this.end - minLength;
-                    }
-
-                    if (time < 0) {
-                        time = 0;
-                    }
-                } else if (resize === 'top') {
+                const topPosHandling = (range, minLength) => {
                     if (range > max_Height - minLength) {
                         range = max_Height - minLength;
                     }
@@ -740,7 +799,10 @@ export class Region {
                     if (range < 0) {
                         range = 0;
                     }
-                } else if (resize === 'end') {
+                    return range;
+                }
+
+                const RightPosHandling = (time, minLength) => {
                     if (time < this.start + minLength) {
                         time = this.start + minLength;
                     }
@@ -748,7 +810,21 @@ export class Region {
                     if (time > duration) {
                         time = duration;
                     }
-                } else if (resize === 'bottom') {
+                    return time;
+                }
+
+                const LeftPosHandling = (time, minLength) => {
+                    if (time > this.end - minLength) {
+                        time = this.end - minLength;
+                    }
+
+                    if (time < 0) {
+                        time = 0;
+                    }
+                    return time
+                }
+
+                const BottomPosHandling = (range, minLength) => {
                     if (range < this.top + minLength) {
                         range = this.top + minLength;
                     }
@@ -756,6 +832,35 @@ export class Region {
                     if (range > max_Height) {
                         range = max_Height;
                     }
+                    return range
+                }
+
+                if (resize === 'start') {
+                    time = LeftPosHandling(time, minLength)
+                } else if (resize === 'top') {
+                    range = topPosHandling(range, minLength)
+                } else if (resize === 'end') {
+                    time = RightPosHandling(time, minLength)
+                } else if (resize === 'bottom') {
+                    range = BottomPosHandling(range, minLength)
+                }
+                else if (resize === 'top-right') {
+                    range = topPosHandling(range, minLength)
+                    time = RightPosHandling(time, minLength)
+                }
+                else if (resize === 'top-left') {
+                    console.log("hello 1")
+                    range = topPosHandling(range, minLength)
+                    time = LeftPosHandling(time, minLength)
+                }
+                else if (resize === 'bottom-right') {
+                    range = BottomPosHandling(range, minLength)
+                    time = RightPosHandling(time, minLength)
+                }
+                else if (resize === 'bottom-left') {
+                    console.log("hello 1")
+                    range = BottomPosHandling(range, minLength)
+                    time = LeftPosHandling(time, minLength)
                 }
             }
 
@@ -773,14 +878,7 @@ export class Region {
             // Resize
             if (this.resize && resize) {
                 updated = updated || !!deltaX || !! deltaY;
-                console.log("hello there, code should be here: " + resize)
-                console.log(resize)
-                if (resize === 'top' || resize === 'bottom') {     
-                    //console.log("Top_delta: " + (frequencyTop - currTop))  
-                    console.log(deltaY, currTop)
-                    this.onResize(deltaY, resize);
-                }
-                this.onResize(deltaX, resize);
+                this.onResize(deltaX, deltaY, resize);
             }
 
             if (
@@ -876,84 +974,149 @@ export class Region {
      * @param {number} delta How much to add or subtract, given in seconds
      * @param {string} direction 'start 'or 'end'
      */
-    onResize(delta, direction) {
+    onResize(deltaX, deltaY, direction) {
         //console.log("THE CODE IS RUNNING HERE: " + direction + " " + delta)
         const duration = this.wavesurfer.getDuration();
         const maxFrequency = this.maxFrequency;
         const max_Height = this.maxHeight;
-        
-        if (direction === 'start') {
-            console.log("called start")
+        const bottom = max_Height - this.bot;
+
+        //delta handling code
+        const topChange = (deltaY) => {
+            //deltaY /= 2;
             // Check if changing the start by the given delta would result in the region being smaller than minLength
             // Ignore cases where we are making the region wider rather than shrinking it
-            if (delta > 0 && this.end - (this.start + delta) < this.minLength) {
-                delta = this.end - this.minLength - this.start;
+            if (deltaY > 0 && bottom - (this.top + deltaY) < this.minLength) {
+                deltaY = bottom  - this.minLength - this.top;
+                //console.log("THIS WAY")
             }
 
-            if (delta < 0 && (this.start + delta) < 0) {
-                delta = this.start * -1;
+            if (deltaY < 0 && (this.top + deltaY) < 0) {
+                deltaY = this.top * -1;
             }
-            this.update({
-                start: Math.min(this.start + delta, this.end),
-                end: Math.max(this.start + delta, this.end)
-            });
-        } 
-        else if (direction === 'end') {
+            console.log("altered delta: " + deltaY)
+            //console.log("old top: " +this.top)
+            return deltaY;
+            
+            //console.log("new top: " + this.top)
+        }
+
+        const endChange = (deltaX) => {
             console.log("called end")
             // Check if changing the end by the given delta would result in the region being smaller than minLength
             // Ignore cases where we are making the region wider rather than shrinking it
-            if (delta < 0 && this.end + delta - this.start < this.minLength) {
-                delta = this.start + this.minLength - this.end;
+            if (deltaX < 0 && this.end + deltaX - this.start < this.minLength) {
+                deltaX = this.start + this.minLength - this.end;
             }
             
-            if (delta > 0 && (this.end + delta) > duration) {
-                delta = duration - this.end;
+            if (deltaX > 0 && (this.end + deltaX) > duration) {
+                deltaX = duration - this.end;
             }
             console.log("hello 5 ")
+            return deltaX;
+        }
+
+        const startChange = (deltaX) => {
+            console.log("called start")
+            // Check if changing the start by the given delta would result in the region being smaller than minLength
+            // Ignore cases where we are making the region wider rather than shrinking it
+            if (deltaX > 0 && this.end - (this.start + deltaX) < this.minLength) {
+                deltaX = this.end - this.minLength - this.start;
+            }
+
+            if (deltaX < 0 && (this.start + deltaX) < 0) {
+                deltaX = this.start * -1;
+            }
+            return deltaX;
+        }
+
+        const bottomChange = (deltaY) => {
+             //deltaY /= 2;
+            // Check if changing the end by the given delta would result in the region being smaller than minLength
+            // Ignore cases where we are making the region wider rather than shrinking it
+            if (deltaY < 0 && bottom + deltaY - this.top < this.minLength) {
+                deltaY = this.top + this.minLength - bottom;
+            }
+
+            if (deltaY > 0 && (bottom + deltaY) > max_Height) {
+                deltaY = max_Height - bottom;
+            }
+            return deltaY;
+        }
+
+
+
+        // set changes with delta
+        if (direction === 'start') {
+            deltaX = startChange(deltaX)
             this.update({
-                start: Math.min(this.end + delta, this.start),
-                end: Math.max(this.end + delta, this.start)
+                start: Math.min(this.start + deltaX, this.end),
+                end: Math.max(this.start + deltaX, this.end)
+            });
+        } 
+        else if (direction === 'end') {
+            deltaX  = endChange(deltaX)
+            this.update({
+                start: Math.min(this.end + deltaX, this.start),
+                end: Math.max(this.end + deltaX, this.start)
             });
         }
 
         else if (direction === 'top') {
-            delta /= 2;
-            const bottom = max_Height - this.bot;
-            // Check if changing the start by the given delta would result in the region being smaller than minLength
-            // Ignore cases where we are making the region wider rather than shrinking it
-            if (delta > 0 && bottom - (this.top + delta) < this.minLength) {
-                delta = bottom  - this.minLength - this.top;
-                //console.log("THIS WAY")
-            }
-
-            if (delta < 0 && (this.top + delta) < 0) {
-                delta = this.top * -1;
-            }
-            console.log("altered delta: " + delta)
-            //console.log("old top: " +this.top)
+            deltaY = topChange(deltaY)
             this.update({
-                top: Math.min(this.top + delta, bottom),
-                bot: max_Height - Math.max(this.top + delta, bottom)
+                top: Math.min(this.top + deltaY, bottom),
+                bot: max_Height - Math.max(this.top + deltaY, bottom)
             });
-            //console.log("new top: " + this.top)
         } 
 
         else if (direction === 'bottom') {
-            delta /= 2;
-            const bottom = max_Height - this.bot;
-            // Check if changing the end by the given delta would result in the region being smaller than minLength
-            // Ignore cases where we are making the region wider rather than shrinking it
-            if (delta < 0 && bottom + delta - this.top < this.minLength) {
-                delta = this.top + this.minLength - bottom;
-            }
-
-            if (delta > 0 && (bottom + delta) > max_Height) {
-                delta = max_Height - bottom;
-            }
+            deltaY = bottomChange(deltaY)
 
             this.update({
-                top: Math.min(bottom + delta, this.top),
-                bot: max_Height - Math.max(bottom + delta, this.top)
+                top: Math.min(bottom + deltaY, this.top),
+                bot: max_Height - Math.max(bottom + deltaY, this.top)
+            });
+        }
+
+        else if (direction === 'top-right') {
+            deltaX  = endChange(deltaX)
+            deltaY = topChange(deltaY)
+            this.update({
+                start: Math.min(this.end + deltaX, this.start),
+                end: Math.max(this.end + deltaX, this.start),
+                top: Math.min(this.top + deltaY, bottom),
+                bot: max_Height - Math.max(this.top + deltaY, bottom),
+            });
+        } else if (direction === 'top-left') {
+            console.log("hello 2")
+            deltaX  = startChange(deltaX)
+            deltaY = topChange(deltaY)
+            this.update({
+                start: Math.min(this.start + deltaX, this.end),
+                end: Math.max(this.start + deltaX, this.end),
+                top: Math.min(this.top + deltaY, bottom),
+                bot: max_Height - Math.max(this.top + deltaY, bottom),
+            });
+        }
+        else if (direction === 'bottom-right') {
+            deltaX  = endChange(deltaX)
+            deltaY = topChange(deltaY)
+            this.update({
+                start: Math.min(this.end + deltaX, this.start),
+                end: Math.max(this.end + deltaX, this.start),
+                top: Math.min(bottom + deltaY, this.top),
+                bot: max_Height - Math.max(bottom + deltaY, this.top)
+            });
+        } else if (direction === 'bottom-left') {
+            console.log("hello 2")
+            deltaX  = startChange(deltaX)
+            deltaY = topChange(deltaY)
+            this.update({
+                start: Math.min(this.start + deltaX, this.end),
+                end: Math.max(this.start + deltaX, this.end),
+                top: Math.min(bottom + deltaY, this.top),
+                bot: max_Height - Math.max(bottom + deltaY, this.top)
             });
         }
     }
