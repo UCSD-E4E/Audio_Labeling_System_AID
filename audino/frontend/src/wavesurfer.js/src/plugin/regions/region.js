@@ -97,6 +97,7 @@ export class Region {
 
     /* Update region params. */
     update(params) {
+        console.log(params)
         if (params.start != null) {
             this.start = Number(params.start);
         }
@@ -197,7 +198,7 @@ export class Region {
     }
 
     /* Render a region as a DOM element. */
-    render() {
+    render(e) {
         const regionEl = document.createElement('region');
 
         regionEl.className = 'wavesurfer-region';
@@ -214,8 +215,8 @@ export class Region {
         this.style(regionEl, {
             position: 'absolute',
             zIndex: 2,
-            height: this.regionHeight,
-            top: this.marginTop
+            height: '20px',
+            top: '0px'
         });
 
         /* Resize handles */
@@ -595,7 +596,7 @@ export class Region {
             currTop = range;
             const deltaY = time - startTime;
             startTime = time;
-            //console.log("LOOK HERE")
+            console.log("LOOK HERE")
             if (resize === 'top' || resize === 'bottom') {
                 drag ? this.onDrag(deltaX, deltaY) : this.onResize(deltaY, resize);
             } else {
@@ -772,7 +773,7 @@ export class Region {
             // Resize
             if (this.resize && resize) {
                 updated = updated || !!deltaX || !! deltaY;
-                //console.log("hello there, code should be here: " + resize)
+                console.log("hello there, code should be here: " + resize)
                 console.log(resize)
                 if (resize === 'top' || resize === 'bottom') {     
                     //console.log("Top_delta: " + (frequencyTop - currTop))  
@@ -880,8 +881,9 @@ export class Region {
         const duration = this.wavesurfer.getDuration();
         const maxFrequency = this.maxFrequency;
         const max_Height = this.maxHeight;
-
+        
         if (direction === 'start') {
+            console.log("called start")
             // Check if changing the start by the given delta would result in the region being smaller than minLength
             // Ignore cases where we are making the region wider rather than shrinking it
             if (delta > 0 && this.end - (this.start + delta) < this.minLength) {
@@ -891,23 +893,23 @@ export class Region {
             if (delta < 0 && (this.start + delta) < 0) {
                 delta = this.start * -1;
             }
-
             this.update({
                 start: Math.min(this.start + delta, this.end),
                 end: Math.max(this.start + delta, this.end)
             });
         } 
         else if (direction === 'end') {
+            console.log("called end")
             // Check if changing the end by the given delta would result in the region being smaller than minLength
             // Ignore cases where we are making the region wider rather than shrinking it
             if (delta < 0 && this.end + delta - this.start < this.minLength) {
                 delta = this.start + this.minLength - this.end;
             }
-
+            
             if (delta > 0 && (this.end + delta) > duration) {
                 delta = duration - this.end;
             }
-
+            console.log("hello 5 ")
             this.update({
                 start: Math.min(this.end + delta, this.start),
                 end: Math.max(this.end + delta, this.start)

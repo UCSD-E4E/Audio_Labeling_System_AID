@@ -214,7 +214,7 @@ export default class RegionsPlugin {
 
     enableDragSelection(params) {
         this.disableDragSelection();
-
+        const max_Height = 254
         const slop = params.slop || 2;
         const container = this.wavesurfer.drawer.container;
         const scroll =
@@ -225,6 +225,7 @@ export default class RegionsPlugin {
         let duration = this.wavesurfer.getDuration();
         let maxScroll;
         let start;
+        let top;
         let region;
         let touchId;
         let pxMove = 0;
@@ -247,6 +248,7 @@ export default class RegionsPlugin {
 
             // Update range
             const end = this.wavesurfer.drawer.handleEvent(e);
+            console.log("secondary")
             region.update({
                 start: Math.min(end * duration, start * duration),
                 end: Math.max(end * duration, start * duration)
@@ -273,6 +275,7 @@ export default class RegionsPlugin {
 
             drag = true;
             start = this.wavesurfer.drawer.handleEvent(e, true);
+            top = this.wavesurfer.drawer.handleEventVertical(e, false, max_Height)
             region = null;
             scrollDirection = null;
         };
@@ -340,9 +343,15 @@ export default class RegionsPlugin {
             const endUpdate = this.wavesurfer.regions.util.getRegionSnapToGridValue(
                 end * duration
             );
+             //remember to change just in case
+            let topUpdate = this.wavesurfer.regions.util.getRegionSnapToGridValue( this.wavesurfer.drawer.handleEventVertical(e, false, max_Height) * max_Height);
+            let bottomUpdate = this.wavesurfer.regions.util.getRegionSnapToGridValue( top  * max_Height);
+            console.log("init pos")
             region.update({
                 start: Math.min(endUpdate, startUpdate),
-                end: Math.max(endUpdate, startUpdate)
+                end: Math.max(endUpdate, startUpdate),
+                top: Math.min(topUpdate, bottomUpdate),
+                bot: max_Height - Math.max(topUpdate, bottomUpdate),
             });
 
             // If scrolling is enabled
