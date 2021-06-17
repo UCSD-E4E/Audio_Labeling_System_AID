@@ -582,6 +582,8 @@ class Annotate_C extends React.Component {
             data: {
               start,
               end,
+              regionTopFrequency,
+              regionBotFrequency,
               transcription,
               annotations,
             },
