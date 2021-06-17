@@ -591,18 +591,15 @@ export class Region {
                 this.wrapper.scrollLeft = scrollLeft = calculatedRight;
             }
 
+            const deltaX = range - currTop
+            currTop = range;
+            const deltaY = time - startTime;
+            startTime = time;
             //console.log("LOOK HERE")
             if (resize === 'top' || resize === 'bottom') {
-                const delta = range - currTop
-                currTop = range;
-                
-                // Continue dragging or resizing
-                drag ? this.onDrag(delta) : this.onResize(delta, resize);
+                drag ? this.onDrag(deltaX, deltaY) : this.onResize(deltaY, resize);
             } else {
-                const delta = time - startTime;
-                startTime = time;
-                // Continue dragging or resizing
-                drag ? this.onDrag(delta) : this.onResize(delta, resize);
+                drag ? this.onDrag(deltaX, deltaY) : this.onResize(deltaX, resize);
             }
             
 
@@ -761,28 +758,28 @@ export class Region {
                 }
             }
 
-            let delta = time - startTime;
+            let deltaX = time - startTime;
             startTime = time;
-
+            let deltaY = range - currTop
+            currTop = range
             // Drag
             if (this.drag && drag) {
-                updated = updated || !!delta;
-                this.onDrag(delta);
+                updated = updated || !!deltaX || !! deltaY;
+                
+                this.onDrag(deltaX, deltaY);
             }
 
             // Resize
             if (this.resize && resize) {
-                updated = updated || !!delta;
+                updated = updated || !!deltaX || !! deltaY;
                 //console.log("hello there, code should be here: " + resize)
                 console.log(resize)
                 if (resize === 'top' || resize === 'bottom') {     
                     //console.log("Top_delta: " + (frequencyTop - currTop))  
-                    delta = range - currTop
-                    currTop = range
-                    console.log(delta, currTop)
-                    this.onResize(delta, resize);
+                    console.log(deltaY, currTop)
+                    this.onResize(deltaY, resize);
                 }
-                this.onResize(delta, resize);
+                this.onResize(deltaX, resize);
             }
 
             if (
@@ -843,19 +840,30 @@ export class Region {
     }
 
     //TODO: Add drag feature here
-    onDrag(delta) {
+    onDrag(deltax, deltay) {
+        let max_Height = this.maxHeight
         const maxEnd = this.wavesurfer.getDuration();
-        if (this.end + delta > maxEnd) {
-            delta = maxEnd - this.end;
+        if (this.end + deltax > maxEnd) {
+            deltax = maxEnd - this.end;
         }
 
-        if (this.start + delta < 0) {
-            delta = this.start * -1;
+        if (this.start + deltax < 0) {
+            deltax = this.start * -1;
         }
 
+        if ( max_Height - this.bot + deltay > max_Height) {
+            deltay = 0;
+        }
+
+        if (this.top + deltay < 0) {
+            deltay = 0;
+        }
+        const bottom = max_Height - this.bot;
         this.update({
-            start: this.start + delta,
-            end: this.end + delta
+            start: this.start + deltax,
+            end: this.end + deltax,
+            top: this.top + deltay,
+            bot: this.bot - deltay 
         });
     }
 
