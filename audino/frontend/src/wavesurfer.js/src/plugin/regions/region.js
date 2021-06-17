@@ -18,15 +18,24 @@ export class Region {
         // It assumes the minLength parameter value, or the regionsMinLength parameter value, if the first one not provided
         this.minLength = params.minLength;
         this.id = params.id == null ? ws.util.getId() : params.id;
+
+        this.maxFrequency = params.maxFrequency || 24000;
+        this.maxHeight = 254;
+
         this.start = Number(params.start) || 0;
-        this.top = Number(params.top) || 0;
-        this.bot = Number(params.bot) || 0;
         this.end =
             params.end == null
                 ? // small marker-like region
                 this.start +
                 (4 / this.wrapper.scrollWidth) * this.wavesurfer.getDuration()
                 : Number(params.end);
+
+        this.top = (Number(params.top) - this.maxFrequency)*(-this.maxHeight/this.maxFrequency) || 0;
+        this.bot = (Number(params.bot))*(this.maxHeight/this.maxFrequency) || 0;
+        this.regionTopFrequency = Number(params.top) || null;
+        this.regionBotFrequency = Number(params.bot) || null;
+
+
         this.resize =
             params.resize === undefined ? true : Boolean(params.resize);
         this.drag = params.drag === undefined ? true : Boolean(params.drag);
@@ -65,9 +74,8 @@ export class Region {
         this.scroll = params.scroll !== false && ws.params.scrollParent;
         this.scrollSpeed = params.scrollSpeed || 1;
         this.scrollThreshold = params.scrollThreshold || 10;
-        this.maxFrequency = params.maxFrequency || 24000;
-        this.regionTopFrequency = null;
-        this.regionBotFrequency = null;
+        
+        
         // Determines whether the context menu is prevented from being opened.
         this.preventContextMenu =
             params.preventContextMenu === undefined
@@ -78,7 +86,6 @@ export class Region {
         let channelIdx =
             params.channelIdx == null ? -1 : parseInt(params.channelIdx);
         this.regionHeight = '100%';
-        this.maxHeight = 254;
         this.marginTop = '0px';
 
         if (channelIdx !== -1) {
@@ -221,11 +228,20 @@ export class Region {
                 this.attributes[attrname]
             );
         }
-
+        let height;
+        console.log("bot", this.top, this.bot)
+        if (this.bot === 0 ) {
+            height = '20px'
+            console.log("set height to 20px")
+        } else {
+            height = this.maxHeight - this.top - this.bot;
+            height = height + 'px'
+            console.log("set height to: ", height)
+        }
         this.style(regionEl, {
             position: 'absolute',
             zIndex: 2,
-            height: '20px',
+            height: height,
             top: '0px'
         });
 

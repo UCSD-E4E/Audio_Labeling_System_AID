@@ -303,6 +303,8 @@ class Annotate_C extends React.Component {
           return {
             start: segmentation.start_time,
             end: segmentation.end_time,
+            top: segmentation.max_freq,
+            bot: segmentation.min_freq,
             data: {
               segmentation_id: segmentation.segmentation_id,
               transcription: segmentation.transcription,
