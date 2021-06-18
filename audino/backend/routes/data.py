@@ -28,7 +28,7 @@ def send_audio_file(file_name):
 def validate_segmentation(segment):
     """Validate the segmentation before accepting the annotation's upload from users
     """
-    required_key = {"start_time", "end_time", "transcription"}
+    required_key = {"start_time", "end_time", "max_freq", "min_freq" ,"transcription"}
 
     if set(required_key).issubset(segment.keys()):
         return True
@@ -42,6 +42,8 @@ def generate_segmentation(
     project_id,
     start_time,
     end_time,
+    max_freq,
+    min_freq,
     data_id,
     segmentation_id=None,
 ):
@@ -52,6 +54,8 @@ def generate_segmentation(
             data_id=data_id,
             start_time=start_time,
             end_time=end_time,
+            max_freq=max_freq,
+            min_freq=min_freq,
             transcription=transcription,
         )
     else:
@@ -61,6 +65,8 @@ def generate_segmentation(
         ).first()
         segmentation.set_start_time(start_time)
         segmentation.set_end_time(end_time)
+        segmentation.set_min_freq(min_freq)
+        segmentation.set_max_freq(max_freq)
         segmentation.set_transcription(transcription)
 
     db.session.add(segmentation)
@@ -184,6 +190,8 @@ def add_data():
             project_id=project.id,
             end_time=segment["end_time"],
             start_time=segment["start_time"],
+            max_freq=segment["max_freq"],
+            min_freq=segment["min_freq"],
             annotations=segment.get("annotations", {}),
             transcription=segment["transcription"],
         )

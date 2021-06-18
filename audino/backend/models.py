@@ -274,6 +274,10 @@ class Segmentation(db.Model):
 
     end_time = db.Column("end_time", db.Float(), nullable=False)
 
+    max_freq = db.Column("max_freq", db.Float(), nullable=False, default=24000.0)
+
+    min_freq = db.Column("min_freq", db.Float(), nullable=False, default=0.0)
+
     transcription = db.Column("transcription", db.Text(), nullable=True)
 
     created_at = db.Column(
@@ -298,6 +302,12 @@ class Segmentation(db.Model):
     def set_end_time(self, end_time):
         self.end_time = end_time
 
+    def set_max_freq(self, max_freq):
+        self.max_freq = max_freq
+
+    def set_min_freq(self, min_freq):
+        self.min_freq = min_freq
+
     def set_transcription(self, transcription):
         self.transcription = transcription
 
@@ -305,6 +315,8 @@ class Segmentation(db.Model):
         return {
             "start_time": self.start_time,
             "end_time": self.end_time,
+            "max_freq": self.max_freq,
+            "min_freq": self.min_freq,
             "transcription": self.transcription,
             "created_at": self.created_at,
             "last_modified": self.last_modified,
