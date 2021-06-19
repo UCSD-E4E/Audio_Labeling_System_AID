@@ -38,16 +38,18 @@ services:
       - frontend-network
 
   mysql:
-    image: mysql:5.7
+    build: ./mysql
     volumes:
       - ./mysql:/mysql
       - mysql_prod_data:/var/lib/mysql
+      - ./rclone/data:/mnt/backup:shared
     environment:
       MYSQL_DATABASE: "audino"
       MYSQL_ROOT_PASSWORD: "root"
       MYSQL_USER: "audino"
       MYSQL_PASSWORD: "audino"
-    command: --init-file=/mysql/create_database.sql --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
+    depends_on:
+      - rclone
     networks:
       - backend-network
 
@@ -59,6 +61,23 @@ services:
       REDIS_PASSWORD: "audino"
     networks:
       - backend-network
+      
+  rclone:
+    image: rclone/rclone:latest
+    volumes:
+      - './rclone/config:/config/rclone'
+      - './rclone/data:/mnt/data:shared'
+      - '/etc/passwd:/etc/passwd:ro'
+      - '/etc/group:/etc/group:ro'
+    cap_add:
+      - MKNOD
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    privileged: true
+    devices:
+      - /dev/fuse
+    command: 'mount --allow-non-empty e4e:Backup /mnt/data --vfs-cache-mode writes'
 
 volumes:
   mysql_prod_data:

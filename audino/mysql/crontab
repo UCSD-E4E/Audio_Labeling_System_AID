@@ -1,0 +1,2 @@
+0 0 * * * cp -R /var/lib/mysql /mnt/backup >> /var/log/cron.log 2>&1
+#emptyline required for cron to run properly
