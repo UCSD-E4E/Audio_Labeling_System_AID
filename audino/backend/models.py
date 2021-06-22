@@ -1,5 +1,5 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from datetime import  datetime
 from backend import db
 
 annotation_table = db.Table(
@@ -280,6 +280,22 @@ class Segmentation(db.Model):
         "created_at", db.DateTime(), nullable=False, default=db.func.now()
     )
 
+    created_by = db.Column(
+        "created_by", db.String(128), nullable=False,
+    )
+
+    clip_frist_opened_at = db.Column(
+        "clip_frist_opened_at", db.DateTime(), nullable=False,
+    )
+
+    last_modified_by = db.Column(
+        "last_modified_by", db.JSON(), nullable=False,
+    )
+    #defined as the time taken for a user to save the annotation after opening a file
+    time_spent = db.Column(
+        "time_spent", db.Integer(), nullable=True
+    )
+
     last_modified = db.Column(
         "last_modified",
         db.DateTime(),
@@ -300,6 +316,9 @@ class Segmentation(db.Model):
 
     def set_transcription(self, transcription):
         self.transcription = transcription
+    
+    def append_modifers(self, newUser):
+        self.last_modified_by[newUser] = datetime.now()
 
     def to_dict(self):
         return {
@@ -307,7 +326,12 @@ class Segmentation(db.Model):
             "end_time": self.end_time,
             "transcription": self.transcription,
             "created_at": self.created_at,
+            "created_by": self.created_by,
             "last_modified": self.last_modified,
+            "last_modified_by": self.last_modified_by,
+            "clip_frist_opened_at": self.clip_frist_opened_at,
+            "time_spent": self.time_spent,
+            
         }
 
 

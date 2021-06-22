@@ -35,6 +35,7 @@ class Annotate_C extends React.Component {
     const dataId = Number(this.props.match.params.dataid);
     const params = new URLSearchParams(window.location.search);
     this.state = {
+      page_opened: null,
       active: params.get("active") || "unknown",
       page: 0,
       next_page: 1,
@@ -68,6 +69,7 @@ class Annotate_C extends React.Component {
   }
 
   componentDidMount() {
+    this.setState({page_opened: Date.now()});
     var linksArray = [];
     var count = 0;
     var links = localStorage.getItem("previous_links");
@@ -515,14 +517,14 @@ class Annotate_C extends React.Component {
   }
 
   handleAllSegmentSave(e) {
-    const { selectedSegment, segmentationUrl, wavesurfer } = this.state;
+    const { selectedSegment, segmentationUrl, wavesurfer, page_opened } = this.state;
     console.log(wavesurfer.regions.list);
     for (var segment_name in wavesurfer.regions.list) {
       console.log("still running save");
       try {
         const segment = wavesurfer.regions.list[segment_name];
         console.log(segment_name, segment);
-        const { start, end } = segment;
+        const { start, end, dateCreated } = segment;
         const {
           transcription = "",
           annotations = "",
@@ -535,7 +537,9 @@ class Annotate_C extends React.Component {
           continue;
         }
         this.setState({ isSegmentSaving: true });
-
+        console.log(page_opened)
+        //console.log(page_opened.toDateString())
+        let timeSpent = dateCreated - page_opened;
         if (segmentation_id === null) {
           axios({
             method: "post",
@@ -545,6 +549,9 @@ class Annotate_C extends React.Component {
               end,
               transcription,
               annotations,
+              page_opened, 
+              dateCreated,
+              timeSpent
             },
           })
             .then((response) => {

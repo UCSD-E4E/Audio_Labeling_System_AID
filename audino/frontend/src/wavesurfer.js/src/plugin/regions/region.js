@@ -85,6 +85,7 @@ export class Region {
         this.saved = false;
         this._onSave = () => this.save();
         this._onUnSave = () => this.unsave();
+        this.dateCreated = Date.now()
     }
 
     /* Update region params. */

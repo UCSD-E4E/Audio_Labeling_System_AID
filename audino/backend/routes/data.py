@@ -1,7 +1,7 @@
 import json
 import sqlalchemy as sa
 import uuid
-
+from datetime import datetime
 from pathlib import Path
 
 from flask import jsonify, flash, redirect, url_for, request, send_from_directory
@@ -43,16 +43,38 @@ def generate_segmentation(
     start_time,
     end_time,
     data_id,
+    user,
+    clip_frist_opened_at,
+    created_at,
+    timeSpent,
     segmentation_id=None,
 ):
     """Generate a Segmentation from the required segment information
     """
+
     if segmentation_id is None:
-        segmentation = Segmentation(
-            data_id=data_id,
-            start_time=start_time,
-            end_time=end_time,
-            transcription=transcription,
+        if created_at is not None:
+            segmentation = Segmentation(
+                data_id=data_id,
+                start_time=start_time,
+                end_time=end_time,
+                transcription=transcription,
+                created_by=user,
+                clip_frist_opened_at=clip_frist_opened_at,
+                last_modified_by={user: datetime.now().strftime("%m/%d/%Y, %H:%M:%S")},
+                created_at=created_at,
+                time_spent=timeSpent,
+            )
+        else:
+            segmentation = Segmentation(
+                data_id=data_id,
+                start_time=start_time,
+                end_time=end_time,
+                transcription=transcription,
+                created_by=user,
+                clip_frist_opened_at=clip_frist_opened_at,
+                time_spent=timeSpent,
+                last_modified_by={user: datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}
         )
     else:
         # segmentation updated for existing data
@@ -62,9 +84,15 @@ def generate_segmentation(
         segmentation.set_start_time(start_time)
         segmentation.set_end_time(end_time)
         segmentation.set_transcription(transcription)
-
+        segmentation.append_modifers(user)
+    
+    app.logger.info("success")
+    app.logger.info(segmentation.to_dict())
+    app.logger.info("success")
     db.session.add(segmentation)
     db.session.flush()
+
+
 
     values = []
 

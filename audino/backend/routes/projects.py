@@ -1,3 +1,4 @@
+from datetime import datetime
 import sqlalchemy as sa
 import uuid
 
@@ -648,10 +649,20 @@ def add_segmentations(project_id, data_id, segmentation_id=None):
 
     transcription = request.json.get("transcription", None)
     annotations = request.json.get("annotations", dict())
+    clip_frist_opened_at_str = request.json.get("page_opened", 0)/1000 #miliseconds to seconds
+    app.logger.info(clip_frist_opened_at_str)
+    clip_frist_opened_at = datetime.fromtimestamp(clip_frist_opened_at_str)
+    app.logger.info(clip_frist_opened_at)
+    app.logger.info(datetime.now())
+
+    segment_frist_made_at_int = request.json.get("dateCreated", 0)/1000
+    segment_frist_made_at = datetime.fromtimestamp(segment_frist_made_at_int) #miliseconds to seconds
+    #clip_frist_opened_at = datetime.strptime(clip_frist_opened_at_str, '%b %d %Y %I:%M%p')
+    timeSpent = request.json.get("timeSpent", 0)/1000
 
     start_time = round(start_time, 4)
     end_time = round(end_time, 4)
-
+    username = identity["username"]
     try:
         request_user = User.query.filter_by(username=identity["username"]).first()
         project = Project.query.get(project_id)
@@ -672,8 +683,11 @@ def add_segmentations(project_id, data_id, segmentation_id=None):
             annotations=annotations,
             transcription=transcription,
             segmentation_id=segmentation_id,
+            user=username,
+            clip_frist_opened_at=clip_frist_opened_at,
+            created_at=segment_frist_made_at,
+            timeSpent=timeSpent,
         )
-
         db.session.add(segmentation)
         db.session.commit()
         db.session.refresh(segmentation)
