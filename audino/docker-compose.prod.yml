@@ -48,11 +48,12 @@ services:
       MYSQL_ROOT_PASSWORD: "root"
       MYSQL_USER: "audino"
       MYSQL_PASSWORD: "audino"
+      RESTORE: "$RESTORE"
     depends_on:
       - rclone
     networks:
       - backend-network
-    command: --init-file=/mysql/create_database.sql --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
+        #command: --init-file=/mysql/create_database.sql --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
 
   redis:
     build: ./redis

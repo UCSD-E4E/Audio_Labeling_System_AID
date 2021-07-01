@@ -11,6 +11,8 @@ RUN groupadd -r mysql && useradd -r -g mysql mysql
 
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg dirmngr && apt-get install -y cron && rm -rf /var/lib/apt/lists/*
 
+ADD ./start.sh /start.sh
+RUN chmod +x /start.sh
 ADD ./crontab /etc/cron.d/backup-cron
 RUN chmod 0644 /etc/cron.d/backup-cron
 RUN crontab /etc/cron.d/backup-cron
@@ -106,6 +108,6 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 
 EXPOSE 3306 33060
 USER root
-CMD ["mysqld"]
+#CMD ["mysqld"]
 
-#CMD ["/start.sh"]
+CMD ["/start.sh"]
