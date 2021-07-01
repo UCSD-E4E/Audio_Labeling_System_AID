@@ -108,6 +108,5 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 
 EXPOSE 3306 33060
 USER root
-#CMD ["mysqld"]
+CMD ["mysqld"]
 
-CMD ["/start.sh"]
