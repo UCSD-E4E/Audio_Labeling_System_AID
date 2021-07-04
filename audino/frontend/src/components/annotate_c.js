@@ -1088,25 +1088,27 @@ class Annotate_C extends React.Component {
                   </label>
                 </div>
               </div>
-              <div className="previous">
-                <Button
-                  size="lg"
-                  type="primary"
-                  disabled={isSegmentSaving}
-                  onClick={(e) => this.handlePreviousClip(e)}
-                  isSubmitting={isSegmentSaving}
-                  text="Previous"
-                />
-              </div>
-              <div className="next">
-                <Button
-                  size="lg"
-                  type="primary"
-                  disabled={isSegmentSaving}
-                  onClick={(e) => this.handleNextClip(e)}
-                  isSubmitting={isSegmentSaving}
-                  text="Next"
-                />
+              <div className="buttons-container">
+                <div className="buttons-container-item">
+                  <Button
+                    size="lg"
+                    type="primary"
+                    disabled={isSegmentSaving}
+                    onClick={(e) => this.handlePreviousClip(e)}
+                    isSubmitting={isSegmentSaving}
+                    text="Previous"
+                  />
+                </div>
+                <div className="buttons-container-item">
+                  <Button
+                    size="lg"
+                    type="primary"
+                    disabled={isSegmentSaving}
+                    onClick={(e) => this.handleNextClip(e)}
+                    isSubmitting={isSegmentSaving}
+                    text="Next"
+                  />
+                </div>
               </div>
             </div>
           </div>
