@@ -4,22 +4,33 @@ import PropTypes from "prop-types";
 const Alert = ({ type, message, overlay, onClose = () => {} }) => {
   return (
     <div
-      className={`alert alert-${type} alert-dismissible fade show ${
-        overlay ? "overlay" : ""
-      }`}
-      style={{ cursor: "pointer", bottom: 0, left: "2%" }}
-      onClick={onClose}
-      role="alert"
+      className={overlay ? "overlay" : ""}
+      style={{
+        top: "2%",
+        left: 0,
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
+      }}
     >
-      {message}
-      <button
-        type="button"
-        className="close"
-        data-dismiss="alert"
-        aria-label="Close"
+      <div
+        className={`alert alert-${type} alert-dismissible fade show ${
+          overlay ? "overlay" : ""
+        }`}
+        style={{ cursor: "pointer" }}
+        onClick={onClose}
+        role="alert"
       >
-        <span aria-hidden="true">&times;</span>
-      </button>
+        {message}
+        <button
+          type="button"
+          className="close"
+          data-dismiss="alert"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
     </div>
   );
 };
