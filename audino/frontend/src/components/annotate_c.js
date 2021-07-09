@@ -67,7 +67,7 @@ class Annotate_C extends React.Component {
   }
 
   componentDidMount() {
-    this.lastTime = Date.now()
+    this.lastTime = Date.now();
     var linksArray = [];
     var count = 0;
     var links = localStorage.getItem("previous_links");
@@ -523,8 +523,10 @@ class Annotate_C extends React.Component {
       console.log("still running save");
       try {
         const segment = wavesurfer.regions.list[segment_name];
-        if (segment.saved) {continue;}
-        
+        if (segment.saved) {
+          continue;
+        }
+
         console.log(segment_name, segment);
         const { start, end } = segment;
         const {
@@ -538,16 +540,16 @@ class Annotate_C extends React.Component {
           console.log("No data, no save");
           continue;
         }
-        this.setState({ isSegmentSaving: true});
-        let now = Date.now()
+        this.setState({ isSegmentSaving: true });
+        let now = Date.now();
         let time_spent = 0;
         if (segment.lastTime == 0) {
-          time_spent = now - this.lastTime
+          time_spent = now - this.lastTime;
         } else {
-          time_spent = now - segment.lastTime
+          time_spent = now - segment.lastTime;
         }
-        console.log(time_spent)
-        segment.setLastTime(now)
+        console.log(time_spent);
+        segment.setLastTime(now);
         if (segmentation_id === null) {
           axios({
             method: "post",
@@ -557,7 +559,7 @@ class Annotate_C extends React.Component {
               end,
               transcription,
               annotations,
-              time_spent
+              time_spent,
             },
           })
             .then((response) => {
@@ -971,62 +973,69 @@ class Annotate_C extends React.Component {
                   />
                 </div>
               </div>
-              {selectedSegment ? (
-                <div>
-                  <div className="row justify-content-center my-4">
-                    <div className="form-group">
-                      <label className="font-weight-bold">
-                        Segment Transcription
-                      </label>
+
+              <div>
+                {selectedSegment && (
+                  <>
+                    <div className="row justify-content-center my-4">
+                      <div className="form-group">
+                        <label className="font-weight-bold">
+                          Segment Transcription
+                        </label>
+                      </div>
                     </div>
-                  </div>
-                  <div className="row justify-content-center my-4">
-                    {Object.entries(labels).map(([key, value], index) => {
-                      if (!value["values"].length) {
-                        return null;
-                      }
-                      return (
-                        <div className="col-3 text-left" key={index}>
-                          <label htmlFor={key} className="font-weight-bold">
-                            {key}
-                          </label>
-                          <select
-                            className="form-control"
-                            name={key}
-                            multiple={
-                              value["type"] === "multiselect" ? true : false
-                            }
-                            value={
-                              (selectedSegment &&
-                                selectedSegment.data.annotations &&
-                                selectedSegment.data.annotations[key] &&
-                                selectedSegment.data.annotations[key][
-                                  "values"
-                                ]) ||
-                              (value["type"] === "multiselect" ? [] : "")
-                            }
-                            onChange={(e) => this.handleLabelChange(key, e)}
-                            ref={(el) => (this.labelRef[key] = el)}
-                          >
-                            {value["type"] !== "multiselect" ? (
-                              <option value="-1">Choose Label Type</option>
-                            ) : null}
-                            {value["values"].map((val) => {
-                              return (
-                                <option
-                                  key={val["value_id"]}
-                                  value={`${val["value_id"]}`}
-                                >
-                                  {val["value"]}
-                                </option>
-                              );
-                            })}
-                          </select>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="row justify-content-center my-4">
+
+                    <div className="row justify-content-center my-4">
+                      {Object.entries(labels).map(([key, value], index) => {
+                        if (!value["values"].length) {
+                          return null;
+                        }
+                        return (
+                          <div className="col-3 text-left" key={index}>
+                            <label htmlFor={key} className="font-weight-bold">
+                              {key}
+                            </label>
+                            <select
+                              className="form-control"
+                              name={key}
+                              multiple={
+                                value["type"] === "multiselect" ? true : false
+                              }
+                              value={
+                                (selectedSegment &&
+                                  selectedSegment.data.annotations &&
+                                  selectedSegment.data.annotations[key] &&
+                                  selectedSegment.data.annotations[key][
+                                    "values"
+                                  ]) ||
+                                (value["type"] === "multiselect" ? [] : "")
+                              }
+                              onChange={(e) => this.handleLabelChange(key, e)}
+                              ref={(el) => (this.labelRef[key] = el)}
+                            >
+                              {value["type"] !== "multiselect" ? (
+                                <option value="-1">Choose Label Type</option>
+                              ) : null}
+                              {value["values"].map((val) => {
+                                return (
+                                  <option
+                                    key={val["value_id"]}
+                                    value={`${val["value_id"]}`}
+                                  >
+                                    {val["value"]}
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+
+                <div className="row justify-content-center my-4">
+                  {selectedSegment && (
                     <div className="col-2">
                       <Button
                         size="lg"
@@ -1037,7 +1046,8 @@ class Annotate_C extends React.Component {
                         text="Delete"
                       />
                     </div>
-                    {/*<div className="col-2">
+                  )}
+                  {/*<div className="col-2">
                         <Button
                           size="lg"
                           type="primary"
@@ -1047,19 +1057,19 @@ class Annotate_C extends React.Component {
                           text="Save Current Segment"
                         />
                     </div>*/}
-                    <div className="col-2">
-                      <Button
-                        size="lg"
-                        type="primary"
-                        //disabled={isSegmentSaving}
-                        onClick={(e) => this.handleAllSegmentSave(e)}
-                        //sSubmitting={isSegmentSaving}
-                        text="Save All"
-                      />
-                    </div>
+                  <div className="col-2">
+                    <Button
+                      size="lg"
+                      type="primary"
+                      //disabled={isSegmentSaving}
+                      onClick={(e) => this.handleAllSegmentSave(e)}
+                      //sSubmitting={isSegmentSaving}
+                      text="Save All"
+                    />
                   </div>
                 </div>
-              ) : null}
+              </div>
+
               <div className="row justify-content-center my-4">
                 <div className="form-check">
                   <input
@@ -1078,25 +1088,27 @@ class Annotate_C extends React.Component {
                   </label>
                 </div>
               </div>
-              <div className="previous">
-                <Button
-                  size="lg"
-                  type="primary"
-                  disabled={isSegmentSaving}
-                  onClick={(e) => this.handlePreviousClip(e)}
-                  isSubmitting={isSegmentSaving}
-                  text="Previous"
-                />
-              </div>
-              <div className="next">
-                <Button
-                  size="lg"
-                  type="primary"
-                  disabled={isSegmentSaving}
-                  onClick={(e) => this.handleNextClip(e)}
-                  isSubmitting={isSegmentSaving}
-                  text="Next"
-                />
+              <div className="buttons-container">
+                <div className="buttons-container-item">
+                  <Button
+                    size="lg"
+                    type="primary"
+                    disabled={isSegmentSaving}
+                    onClick={(e) => this.handlePreviousClip(e)}
+                    isSubmitting={isSegmentSaving}
+                    text="Previous"
+                  />
+                </div>
+                <div className="buttons-container-item">
+                  <Button
+                    size="lg"
+                    type="primary"
+                    disabled={isSegmentSaving}
+                    onClick={(e) => this.handleNextClip(e)}
+                    isSubmitting={isSegmentSaving}
+                    text="Next"
+                  />
+                </div>
               </div>
             </div>
           </div>
