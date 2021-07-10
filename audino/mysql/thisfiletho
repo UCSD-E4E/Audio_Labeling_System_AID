@@ -1,0 +1,352 @@
+-- MySQL dump 10.13  Distrib 5.7.34, for Linux (x86_64)
+--
+-- Host: localhost    Database: audino
+-- ------------------------------------------------------
+-- Server version	5.7.34
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `alembic_version`
+--
+
+DROP TABLE IF EXISTS `alembic_version`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `alembic_version` (
+  `version_num` varchar(32) COLLATE utf8mb4_bin NOT NULL,
+  PRIMARY KEY (`version_num`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `alembic_version`
+--
+
+LOCK TABLES `alembic_version` WRITE;
+/*!40000 ALTER TABLE `alembic_version` DISABLE KEYS */;
+INSERT INTO `alembic_version` VALUES ('25a6a97c0818');
+/*!40000 ALTER TABLE `alembic_version` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `annotation`
+--
+
+DROP TABLE IF EXISTS `annotation`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `annotation` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `segmentation_id` int(11) NOT NULL,
+  `label_value_id` int(11) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `last_modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `label_value_id` (`label_value_id`),
+  KEY `segmentation_id` (`segmentation_id`),
+  CONSTRAINT `annotation_ibfk_1` FOREIGN KEY (`label_value_id`) REFERENCES `label_value` (`id`),
+  CONSTRAINT `annotation_ibfk_2` FOREIGN KEY (`segmentation_id`) REFERENCES `segmentation` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `annotation`
+--
+
+LOCK TABLES `annotation` WRITE;
+/*!40000 ALTER TABLE `annotation` DISABLE KEYS */;
+/*!40000 ALTER TABLE `annotation` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `data`
+--
+
+DROP TABLE IF EXISTS `data`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `data` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `project_id` int(11) NOT NULL,
+  `assigned_user_id` json NOT NULL,
+  `filename` varchar(100) COLLATE utf8mb4_bin NOT NULL,
+  `original_filename` varchar(100) COLLATE utf8mb4_bin NOT NULL,
+  `reference_transcription` text COLLATE utf8mb4_bin,
+  `is_marked_for_review` tinyint(1) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `last_modified` datetime NOT NULL,
+  `sampling_rate` int(11) NOT NULL,
+  `clip_length` float NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `filename` (`filename`),
+  KEY `project_id` (`project_id`),
+  CONSTRAINT `data_ibfk_1` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `data`
+--
+
+LOCK TABLES `data` WRITE;
+/*!40000 ALTER TABLE `data` DISABLE KEYS */;
+/*!40000 ALTER TABLE `data` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `label`
+--
+
+DROP TABLE IF EXISTS `label`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `label` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(32) COLLATE utf8mb4_bin NOT NULL,
+  `project_id` int(11) NOT NULL,
+  `type_id` int(11) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `last_modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `_name_project_id_uc` (`name`,`project_id`),
+  KEY `project_id` (`project_id`),
+  KEY `type_id` (`type_id`),
+  CONSTRAINT `label_ibfk_1` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
+  CONSTRAINT `label_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `label_type` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `label`
+--
+
+LOCK TABLES `label` WRITE;
+/*!40000 ALTER TABLE `label` DISABLE KEYS */;
+/*!40000 ALTER TABLE `label` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `label_type`
+--
+
+DROP TABLE IF EXISTS `label_type`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `label_type` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `type` varchar(32) COLLATE utf8mb4_bin NOT NULL,
+  `created_at` datetime NOT NULL,
+  `last_modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `type` (`type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `label_type`
+--
+
+LOCK TABLES `label_type` WRITE;
+/*!40000 ALTER TABLE `label_type` DISABLE KEYS */;
+/*!40000 ALTER TABLE `label_type` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `label_value`
+--
+
+DROP TABLE IF EXISTS `label_value`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `label_value` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `label_id` int(11) NOT NULL,
+  `value` varchar(200) COLLATE utf8mb4_bin NOT NULL,
+  `created_at` datetime NOT NULL,
+  `last_modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `_label_id_value_uc` (`label_id`,`value`),
+  CONSTRAINT `label_value_ibfk_1` FOREIGN KEY (`label_id`) REFERENCES `label` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `label_value`
+--
+
+LOCK TABLES `label_value` WRITE;
+/*!40000 ALTER TABLE `label_value` DISABLE KEYS */;
+/*!40000 ALTER TABLE `label_value` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `project`
+--
+
+DROP TABLE IF EXISTS `project`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `project` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(32) COLLATE utf8mb4_bin NOT NULL,
+  `creator_user_id` int(11) NOT NULL,
+  `api_key` varchar(32) COLLATE utf8mb4_bin NOT NULL,
+  `created_at` datetime NOT NULL,
+  `last_modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `api_key` (`api_key`),
+  UNIQUE KEY `name` (`name`),
+  KEY `creator_user_id` (`creator_user_id`),
+  CONSTRAINT `project_ibfk_1` FOREIGN KEY (`creator_user_id`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `project`
+--
+
+LOCK TABLES `project` WRITE;
+/*!40000 ALTER TABLE `project` DISABLE KEYS */;
+/*!40000 ALTER TABLE `project` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `role`
+--
+
+DROP TABLE IF EXISTS `role`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `role` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `role` varchar(30) COLLATE utf8mb4_bin NOT NULL,
+  `created_at` datetime NOT NULL,
+  `last_modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ix_role_role` (`role`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `role`
+--
+
+LOCK TABLES `role` WRITE;
+/*!40000 ALTER TABLE `role` DISABLE KEYS */;
+INSERT INTO `role` VALUES (1,'admin','2021-07-10 01:49:04','2021-07-10 01:49:04'),(2,'user','2021-07-10 01:49:04','2021-07-10 01:49:04');
+/*!40000 ALTER TABLE `role` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `segmentation`
+--
+
+DROP TABLE IF EXISTS `segmentation`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `segmentation` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `data_id` int(11) NOT NULL,
+  `start_time` float NOT NULL,
+  `end_time` float NOT NULL,
+  `transcription` text COLLATE utf8mb4_bin,
+  `created_at` datetime NOT NULL,
+  `last_modified` datetime NOT NULL,
+  `time_spent` float NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `data_id` (`data_id`),
+  CONSTRAINT `segmentation_ibfk_1` FOREIGN KEY (`data_id`) REFERENCES `data` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `segmentation`
+--
+
+LOCK TABLES `segmentation` WRITE;
+/*!40000 ALTER TABLE `segmentation` DISABLE KEYS */;
+/*!40000 ALTER TABLE `segmentation` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user`
+--
+
+DROP TABLE IF EXISTS `user`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `user` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(128) COLLATE utf8mb4_bin NOT NULL,
+  `password` varchar(100) COLLATE utf8mb4_bin NOT NULL,
+  `role_id` int(11) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `last_modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ix_user_username` (`username`),
+  KEY `role_id` (`role_id`),
+  CONSTRAINT `user_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `role` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user`
+--
+
+LOCK TABLES `user` WRITE;
+/*!40000 ALTER TABLE `user` DISABLE KEYS */;
+INSERT INTO `user` VALUES (1,'admin','pbkdf2:sha256:150000$mANvAFyO$0db29f43f31aee344b648facba65b5b5caee9764fcfb8fbfe6e2e578a4d23d0c',1,'2021-07-10 01:49:04','2021-07-10 01:49:04');
+/*!40000 ALTER TABLE `user` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user_project`
+--
+
+DROP TABLE IF EXISTS `user_project`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `user_project` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `project_id` int(11) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `last_modified` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `project_id` (`project_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `user_project_ibfk_1` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
+  CONSTRAINT `user_project_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user_project`
+--
+
+LOCK TABLES `user_project` WRITE;
+/*!40000 ALTER TABLE `user_project` DISABLE KEYS */;
+/*!40000 ALTER TABLE `user_project` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2021-07-10  2:39:01
+

@@ -11,6 +11,9 @@ RUN groupadd -r mysql && useradd -r -g mysql mysql
 
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg dirmngr && apt-get install -y cron && rm -rf /var/lib/apt/lists/*
 
+ARG BACKUP_FILE
+RUN mkdir /backup
+ADD "${BACKUP_FILE}" /backup/db_file
 ADD ./start.sh /start.sh
 RUN chmod +x /start.sh
 ADD ./crontab /etc/cron.d/backup-cron
