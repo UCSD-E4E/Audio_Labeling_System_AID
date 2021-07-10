@@ -13,7 +13,6 @@ from backend.models import User
 import json
 from . import auth
 
-
 @jwt.token_in_blacklist_loader
 def check_if_token_is_revoked(decrypted_token):
     jti = decrypted_token["jti"]

@@ -40,5 +40,6 @@ if [[ -n "${ADMIN_PASSWORD}" ]] && [[ -n "${ADMIN_USERNAME}" ]]; then
 fi
 
 echo "Starting flask development server"
+pylint "${app}" || cd "${app}" && flask run --host=0.0.0.0 --port=5000
 cd "${app}" && flask run --host=0.0.0.0 --port=5000
 # sleep infinity
