@@ -10,7 +10,8 @@ import {
   faTags,
   faDownload,
   faTrash,
-  faUpload
+  faUpload,
+  faList
 } from "@fortawesome/free-solid-svg-icons";
 import { IconButton } from "../components/button";
 import Loader from "../components/loader";
@@ -130,6 +131,18 @@ class Admin extends React.Component {
       api_key,
     });
   }
+  handleFeatureToggle(e, projectName, projectId, api_key) {
+    console.log(api_key, "hi")
+    this.setModalShow(true);
+    this.setState({
+      formType: "FEATURE_FORM",
+      title: `Toggle Features on or off for ${projectName}`,
+      projectId,
+      projectName,
+      api_key,
+    });
+  }
+
   handleDownloadDataToProject(e, projectName, projectId, api_key) {
     console.log(api_key, "hi")
     this.setModalShow(true);
@@ -318,6 +331,19 @@ class Admin extends React.Component {
                               title={"Download Data"}
                               onClick={(e) =>
                                 this.handleDownloadDataToProject(
+                                  e,
+                                  project["name"],
+                                  project["project_id"],
+                                  project["api_key"]
+                                )
+                              }
+                            />
+                            <IconButton
+                              icon={faList}
+                              size="sm"
+                              title={"Turn on or Off Annotation Features"}
+                              onClick={(e) =>
+                                this.handleFeatureToggle(
                                   e,
                                   project["name"],
                                   project["project_id"],

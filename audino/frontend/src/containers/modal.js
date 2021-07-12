@@ -14,6 +14,7 @@ import DeleteUserForm from "./forms/deleteUser";
 import DeleteLabelForm from "./forms/deleteLabelFrom"
 import EditProjectForm from "./forms/editProjectForm"
 import DownloadDataForm from "./forms/downloadDataFrom";
+import FeatureForm from "./forms/featureForm";
 
 const FormModal = (props) => {
   console.log("INSIDE FORMMODAL", props.formType)
@@ -83,6 +84,13 @@ const FormModal = (props) => {
         ) : null}
         {props.formType === "DOWNLOAD_DATA" ? (
           <DownloadDataForm
+            projectId={props.projectId}
+            projectName={props.projectName}
+            apiKey={props.api_key}
+          />
+        ) : null}
+        {props.formType === "FEATURE_FORM" ? (
+          <FeatureForm
             projectId={props.projectId}
             projectName={props.projectName}
             apiKey={props.api_key}

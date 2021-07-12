@@ -238,6 +238,83 @@ def update_project_users(project_id):
         200,
     )
 
+@api.route("/projects/toggled", methods=["PATCH"])
+@jwt_required
+def set_toggled_features():
+    identity = get_jwt_identity()
+    request_user = User.query.filter_by(username=identity["username"]).first()
+    is_admin = True if request_user.role.role == "admin" else False
+    if is_admin == False:
+        return jsonify(message="Unauthorized access!"), 401
+
+    if not request.is_json:
+        return jsonify(message="Missing JSON in request"), 400
+
+    features = request.json.get("featuresEnabled", {})
+    project_id = request.json.get("projectId", None)
+
+    app.logger.info(features)
+
+
+
+    project = Project.query.get(project_id)
+        
+    project.set_features(features)
+    db.session.add(project)
+    db.session.commit()
+    db.session.refresh(project)
+    app.logger.info("hello")
+
+
+
+    try:
+        project = Project.query.get(project_id)
+        
+        project.set_features(features)
+        db.session.add(project)
+        db.session.commit()
+        db.session.refresh(project)
+    except Exception as e:
+        app.logger.error(f"Error adding features to project: {project_id}")
+        app.logger.error(e)
+        return (
+            jsonify(
+                message=f"Error adding features to project: {project_id}",
+                type="USERS_ASSIGNMENT_FAILED",
+            ),
+            500,
+        )
+    return (
+        jsonify(
+            project_id=-1,
+            message=f"features added",
+            type="FEATURES_ASSIGNED_TO_PROJECT",
+        ),
+        200,
+    )
+
+@api.route("/projects/<int:project_id>/toggled", methods=["GET"])
+def get_features(project_id):
+    try:
+        project = Project.query.get(project_id)
+        
+    except Exception as e:
+        app.logger.error(f"No project exists with Project ID: {project_id}")
+        app.logger.error(e)
+        return (
+            jsonify(
+                message="No project exists with given project_id", project_id=project_id
+            ),
+            404,
+        )
+
+    return (
+        jsonify(
+            features_list=project.features_list,
+        ),
+        200,
+    )
+
 @api.route("/projects/example", methods=["PATCH"])
 def give_users_examples():
     user_id = request.json.get("users")

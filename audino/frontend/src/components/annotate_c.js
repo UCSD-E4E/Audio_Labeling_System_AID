@@ -60,6 +60,12 @@ class Annotate_C extends React.Component {
       data: [],
       previous_pages: [],
       num_of_prev: 0,
+      featuresEnabled: {
+        "next button": false,
+        "example": false,
+        "example 2": false,
+        "example 3": false,
+      }
     };
     this.lastTime = 0;
     this.labelRef = {};
@@ -155,6 +161,24 @@ class Annotate_C extends React.Component {
           isDataLoading: false,
         });
       });
+
+      axios({
+        method: "get",
+        url: '/api/projects/' + this.state.projectId + '/toggled',
+      })
+        .then((response) => {
+          //take all the current values of featuresList, include the new ones defined at the line 27
+          let featuresList = response.data.features_list
+          console.log(featuresList)
+          this.setState({
+            featuresEnabled: featuresList
+          });
+        })
+        .catch((error) => {
+          this.setState({
+            errorMessage: error.response.data.message,
+          });
+        });
 
     var spectrogramColorMap = colormap({
       /*colormap: 'jet',
@@ -1078,26 +1102,31 @@ class Annotate_C extends React.Component {
                   </label>
                 </div>
               </div>
-              <div className="previous">
-                <Button
-                  size="lg"
-                  type="primary"
-                  disabled={isSegmentSaving}
-                  onClick={(e) => this.handlePreviousClip(e)}
-                  isSubmitting={isSegmentSaving}
-                  text="Previous"
-                />
+              {this.state.featuresEnabled["next button"] && (
+                <div>
+                  <div className="previous">
+                  <Button
+                    size="lg"
+                    type="primary"
+                    disabled={isSegmentSaving}
+                    onClick={(e) => this.handlePreviousClip(e)}
+                    isSubmitting={isSegmentSaving}
+                    text="Previous"
+                  />
+                </div>
+                <div className="next">
+                  <Button
+                    size="lg"
+                    type="primary"
+                    disabled={isSegmentSaving}
+                    onClick={(e) => this.handleNextClip(e)}
+                    isSubmitting={isSegmentSaving}
+                    text="Next"
+                  />
+                </div>
               </div>
-              <div className="next">
-                <Button
-                  size="lg"
-                  type="primary"
-                  disabled={isSegmentSaving}
-                  onClick={(e) => this.handleNextClip(e)}
-                  isSubmitting={isSegmentSaving}
-                  text="Next"
-                />
-              </div>
+              )}
+              
             </div>
           </div>
         </div>

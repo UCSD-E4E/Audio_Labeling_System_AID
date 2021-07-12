@@ -218,6 +218,8 @@ class Project(db.Model):
 
     api_key = db.Column("api_key", db.String(32), nullable=False, unique=True)
 
+    features_list = db.Column("features_list", db.JSON(), nullable=True, default={})
+
     created_at = db.Column(
         "created_at", db.DateTime(), nullable=False, default=db.func.now()
     )
@@ -239,6 +241,9 @@ class Project(db.Model):
     
     def set_name(self, newUsername):
         self.name = newUsername
+
+    def set_features(self, features):
+        self.features_list = features
 
 
 class Role(db.Model):
