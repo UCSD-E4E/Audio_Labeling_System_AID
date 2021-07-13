@@ -1,5 +1,7 @@
 import json
 import csv
+from pprint import pprint
+
 
 def fileWrapperForJson(filename):
     with open(filename, 'r') as f:
@@ -28,9 +30,6 @@ def JsonToCsv(data, filename):
                     label = "NO LABEL"
                 else:
                     label = list(region['annotations'].values())[0]['values']['value']
-                print(region)
-                print(type(segments))
-                print(label)
                 last_modified = region['last_modified']
                 end = region['end_time']
                 start = region['start_time']
@@ -47,26 +46,37 @@ def JsonToText(data):
         clip_length = audio['clip_length']
         original_filename = audio['original_filename']       
         segments = audio['segmentations']
+
         for region in segments:
-            if len(region['annotations']) == 0:
-                label = "NO LABEL"
-            else:
-                label = list(region['annotations'].values())[0]['values']['value']
             end = region['end_time']
             start = region['start_time']
             time_spent = region['time_spent']
-            text = write_row(text, [original_filename, clip_length, start, round((end-start), 4),  sampling_rate, label, time_spent])
-            csv.append([original_filename, clip_length, start, round((end-start), 4),  sampling_rate, label, time_spent])
+            if len(region['annotations']) == 0:
+                label = "NO LABEL"
+                text = write_row(text, [original_filename, clip_length, start, round((end-start), 4),  sampling_rate, label, time_spent])
+                csv.append([original_filename, clip_length, start, round((end-start), 4),  sampling_rate, label, time_spent])
+            else:
+                for labelCate in region['annotations'].values():
+                    print(labelCate)
+                    values = labelCate["values"]
+                    try:
+                        for label in values:
+                            print(label)
+                            label = label['value'] 
+                            text = write_row(text, [original_filename, clip_length, start, round((end-start), 4),  sampling_rate, label, time_spent])
+                            csv.append([original_filename, clip_length, start, round((end-start), 4),  sampling_rate, label, time_spent])
+                    except:
+                        label = values['value'] 
+                        text = write_row(text, [original_filename, clip_length, start, round((end-start), 4),  sampling_rate, label, time_spent])
+                        csv.append([original_filename, clip_length, start, round((end-start), 4),  sampling_rate, label, time_spent])
     return text, csv
 
 def write_row(text, row):
-    print(row)
-    print(len(row))
     for i in range(len(row)):
-        print(i)
         text = text + str(row[i])
         if (i == (len(row) - 1)):
             text = text + "\n"
         else:
             text = text + ","
     return text
+

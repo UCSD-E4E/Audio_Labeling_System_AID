@@ -541,11 +541,11 @@ def get_segmentations_for_data(project_id, data_id):
                     values[value.label.name] = {
                         "label_id": value.label.id,
                         "values": []
-                        if value.label.label_type.type == "multiselect"
+                        if value.label.label_type.type == "Multi-select"
                         else None,
                     }
 
-                if value.label.label_type.type == "multiselect":
+                if value.label.label_type.type == "Multi-select":
                     values[value.label.name]["values"].append(value.id)
                 else:
                     values[value.label.name]["values"] = value.id
@@ -783,11 +783,11 @@ def get_project_annotations(project_id):
                         values[value.label.name] = {
                             "id": value.label.id,
                             "values": []
-                            if value.label.label_type.type == "multiselect"
+                            if value.label.label_type.type == "Multi-select"
                             else None,
                         }
 
-                    if value.label.label_type.type == "multiselect":
+                    if value.label.label_type.type == "Multi-select":
                         values[value.label.name]["values"].append(
                             {"id": value.id, "value": value.value}
                         )
@@ -801,9 +801,6 @@ def get_project_annotations(project_id):
 
                 data_dict["segmentations"].append(segmentation_dict)
             annotations.append(data_dict)
-        text, csv =  JsonLabelsToCsv.JsonToText(annotations)
-        app.logger.info(f'{type(text)}, {text}')
-        json_return = {'annotations': str(text)}
         app.logger.info("could do this, error isn't here")
     except Exception as e:
         message = "Error fetching annotations for project"
@@ -811,6 +808,8 @@ def get_project_annotations(project_id):
         app.logger.error(e)
         return jsonify(message=message, type="FETCH_ANNOTATIONS_FAILED"), 500
     if ((download_csv) == "true"):
+        text, csv =  JsonLabelsToCsv.JsonToText(annotations)
+        app.logger.info(f'{type(text)}, {text}')
         annotations_to_download = csv
         app.logger.info("here: ", annotations_to_download)
     else:

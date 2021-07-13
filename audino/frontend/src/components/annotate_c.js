@@ -631,7 +631,7 @@ class Annotate_C extends React.Component {
   handleLabelChange(key, e) {
     const { selectedSegment, labels } = this.state;
     selectedSegment.data.annotations = selectedSegment.data.annotations || {};
-    if (labels[key]["type"] === "multiselect") {
+    if (labels[key]["type"] === "Multi-select") {
       selectedSegment.data.annotations[key] = {
         label_id: labels[key]["label_id"],
         values: Array.from(e.target.selectedOptions, (option) => option.value),
@@ -994,7 +994,7 @@ class Annotate_C extends React.Component {
                             className="form-control"
                             name={key}
                             multiple={
-                              value["type"] === "multiselect" ? true : false
+                              value["type"] === "Multi-select" ? true : false
                             }
                             value={
                               (selectedSegment &&
@@ -1003,12 +1003,12 @@ class Annotate_C extends React.Component {
                                 selectedSegment.data.annotations[key][
                                   "values"
                                 ]) ||
-                              (value["type"] === "multiselect" ? [] : "")
+                              (value["type"] === "Multi-select" ? [] : "")
                             }
                             onChange={(e) => this.handleLabelChange(key, e)}
                             ref={(el) => (this.labelRef[key] = el)}
                           >
-                            {value["type"] !== "multiselect" ? (
+                            {value["type"] !== "Multi-select" ? (
                               <option value="-1">Choose Label Type</option>
                             ) : null}
                             {value["values"].map((val) => {

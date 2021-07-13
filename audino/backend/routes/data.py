@@ -87,7 +87,9 @@ def generate_segmentation(
 
         if isinstance(label_values, list):
             for val_id in label_values:
-
+                app.logger.info(val_id)
+                app.logger.info(label_values)
+                app.logger.info("===================")
                 value = LabelValue.query.filter_by(
                     id=int(val_id), label_id=int(label.id)
                 ).first()
