@@ -54,7 +54,8 @@ class Annotate_C extends React.Component {
       selectedSegment: null,
       isSegmentDeleting: false,
       errorMessage: null,
-      errorUnsavedMessage: null,
+      errorUnsavedMessageNext: null,
+      errorUnsavedMessagePrevious: null,
       successMessage: null,
       isRendering: true, //TODO: REMEMBER TO SET TO TRUE
       data: [],
@@ -650,7 +651,7 @@ class Annotate_C extends React.Component {
     this.setState({
       successMessage: "",
       errorMessage: "",
-      errorUnsavedMessage: "",
+      errorUnsavedMessageNext: "",
     });
   }
 
@@ -672,7 +673,7 @@ class Annotate_C extends React.Component {
       if (segment.saved == false && !forceNext) {
         if (segment.data.annotations == null) {
           this.setState({
-            errorUnsavedMessage:
+            errorUnsavedMessageNext:
               'There regions without a label! You can\'t leave yet! If you are sure, click "force next"',
           });
           return;
@@ -765,7 +766,7 @@ class Annotate_C extends React.Component {
       if (segment.saved == false && !forceNext) {
         if (segment.data.annotations == null) {
           this.setState({
-            errorUnsavedMessage:
+            errorUnsavedMessagePrevious:
               'There regions without a label! You can\'t leave yet! If you are sure, click "force previous"',
           });
           return;
@@ -865,7 +866,8 @@ class Annotate_C extends React.Component {
       isSegmentDeleting,
       isSegmentSaving,
       errorMessage,
-      errorUnsavedMessage,
+      errorUnsavedMessageNext,
+      errorUnsavedMessagePrevious, 
       successMessage,
       isRendering,
     } = this.state;
@@ -876,11 +878,11 @@ class Annotate_C extends React.Component {
         </Helmet>
         <div className="container h-100">
           <div className="h-100 mt-5 text-center">
-            {errorUnsavedMessage ? (
+            {errorUnsavedMessageNext ? (
               <div>
                 <Alert
                   type="danger"
-                  message={errorUnsavedMessage}
+                  message={errorUnsavedMessageNext}
                   overlay={true}
                   onClose={(e) => this.handleAlertDismiss(e)}
                 />
@@ -891,6 +893,23 @@ class Annotate_C extends React.Component {
                   onClick={(e) => this.handleNextClip(e, true)}
                   isSubmitting={isSegmentSaving}
                   text="Force Next"
+                />
+              </div>
+            ) : errorUnsavedMessagePrevious ? (
+              <div>
+                <Alert
+                  type="danger"
+                  message={errorUnsavedMessagePrevious}
+                  overlay={true}
+                  onClose={(e) => this.handleAlertDismiss(e)}
+                />
+                <Button
+                  size="large"
+                  type="danger"
+                  disabled={isSegmentSaving}
+                  onClick={(e) => this.handlePreviousClip(e, true)}
+                  isSubmitting={isSegmentSaving}
+                  text="Force Previous"
                 />
               </div>
             ) : errorMessage ? (
