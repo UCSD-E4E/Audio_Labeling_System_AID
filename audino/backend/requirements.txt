@@ -19,3 +19,4 @@ Werkzeug==0.16.0
 WTForms==2.2.1
 flask-jwt-extended==3.25.0
 flask-redis==0.4.0
+mutagen==1.45.1

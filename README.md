@@ -1,6 +1,8 @@
-## E4E Audio Labeling System
+## Pyrenote, The E4E Manual Audio Labeling System
 
-This project creates moment to moment or hard labels for audio data. If you are starting use the fallowing to get started!
+This project, Pyrenote, creates moment to moment or strong labels for audio data. Pyrenote and much of this README are based on heavily on [Audino](https://github.com/midas-research/audino) as well as [Wavesufer.js](https://github.com/katspaugh/wavesurfer.js). The name is a combination of Py, Lyrebird, and note (such as making a note on a label).
+
+ If you want to use Pyrenote, use the fallowing to get started!
 
 **NOTE** Before making any changes to the code, make sure to create a branch to safetly make changes. Never commit directly to main.
 **Read github_procedures.md for more detailed information before contributing to the repo** 
@@ -9,7 +11,7 @@ This project creates moment to moment or hard labels for audio data. If you are 
 
 *Note: Before getting the project set up, message project leads for env file. This file should be put in /audino **make sure the file is never pushed to the github***
 
-Please install the following dependencies to run `audino` on your system:
+Please install the following dependencies to run `Pyrenote` on your system:
 
 1. [git](https://git-scm.com/) *[tested on v2.23.0]*
 2. [docker](https://www.docker.com/) *[tested on v19.03.8, build afacb8b]*
