@@ -12,7 +12,7 @@ from werkzeug.exceptions import BadRequest, NotFound, InternalServerError
 
 from backend import app, db
 from backend.models import Data, Project, User, Segmentation, Label, LabelValue
-
+import mutagen
 import wave
 from . import api
 
@@ -264,12 +264,16 @@ def add_data_from_site():
 
         file_path = Path(app.config["UPLOAD_FOLDER"]).joinpath(filename)
         file.save(file_path.as_posix())
-        wave_file = wave.open(str(file_path), 'rb')
-        frame_rate = wave_file.getframerate()
-        frames = wave_file.getnframes()
-        rate = wave_file.getframerate()
-        clip_duration = frames / float(rate)
-        wave_file.close()
+        metadata = mutagen.File(file_path.as_posix()).info
+        app.logger.info(metadata.length)
+        app.logger.info(metadata.sample_rate)
+        #wave_file = wave.open(str(file_path), 'rb')
+        #app.logger.info("success")
+        frame_rate = metadata.sample_rate
+        #frames = wave_file.getnframes()
+        #rate = wave_file.getframerate()
+        clip_duration = metadata.length
+        #wave_file.close()
         try:
             data = Data(
                 project_id=project.id,
