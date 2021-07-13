@@ -4,9 +4,9 @@ The labeling system implements [Audino](https://github.com/midas-research/audino
 
 **NOTE** If you ever have a bug or trying to fix something. A good place to double check is with these repos incase they have updated to make the code you are working with better. 
 
-## Logging into Audino
+## Logging into Pyrenote
 
-Audino uses redis in order to protect our backend endpoints. Users become authenticated when they log into the site. The only unprotected endpoint is the ability to create your own user when you sign up for an account on your own. 
+Pyrenote uses redis in order to protect our backend endpoints. Users become authenticated when they log into the site. The only unprotected endpoint is the ability to create your own user when you sign up for an account on your own. 
 
 **NOTE** if you ever get a 401 error when working with ethier the backend or a route, the request is coming from a non authenticated users and your route requires authentication. 
 

@@ -37,7 +37,7 @@ class NavBar extends React.Component {
     return (
       <nav class="navbar navbar-expand-md bg-dark navbar-dark">
         <Link to="/" className="navbar-brand">
-          audino
+          Pyrenote
         </Link>
 
         <button
