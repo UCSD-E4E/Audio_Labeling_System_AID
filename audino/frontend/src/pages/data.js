@@ -19,7 +19,7 @@ class Data extends React.Component {
       projectId,
       data: [],
       active: params.get("active") || "pending",
-      page: params.get("page") || 1,
+      page:  1,
       count: {
         pending: 0,
         completed: 0,
@@ -43,24 +43,27 @@ class Data extends React.Component {
     return `/projects/${projectId}/data?page=${page}&active=${active}`;
   }
 
-  componentDidMount() {
-    this.setState({ isDataLoading: true });
-    let { apiUrl, page, active } = this.state;
+  getData(next=false) {
+    let { apiUrl, page, active, data } = this.state;
     apiUrl = `${apiUrl}?page=${page}&active=${active}`;
-
+    if (next) {page += 1;}
+    console.log(page)
     axios({
       method: "get",
       url: apiUrl,
     })
       .then((response) => {
         const {
-          data,
           count,
           active,
-          page,
           next_page,
           prev_page,
         } = response.data;
+        let next_page_data = response.data.data;
+        console.log(next_page_data)
+        data = next_page_data.concat(data)
+        console.log(data)
+        
         this.setState({
           data,
           count,
@@ -70,6 +73,16 @@ class Data extends React.Component {
           prevPage: prev_page,
           isDataLoading: false,
         });
+
+        if (!next) {
+          let yMax = document.body.scrollHeight - document.body.clientHeight
+          console.log(yMax)
+          //TODO: Test on long monitor to deterimine if this is smart
+          //Basically, if user has big monitor, add another set of data to hit scroll limit
+          if (yMax == 0) {
+            this.getData(true)
+          }
+        } 
       })
       .catch((error) => {
         this.setState({
@@ -80,26 +93,32 @@ class Data extends React.Component {
     //datas = data;
   }
 
-  getNextPage() {
-    const {
-      projectId,
-      isDataLoading,
-      data,
-      count,
-      active,
-      page,
-      nextPage,
-      prevPage,
-      tabUrls,
-    } = this.state;
-
-   /* Array data
-
-    data.map((data, index) => {
-      href=`/projects/${projectId}/data/${data["data_id"]}/annotate`
-    });*/
-    return projectId, data;
+  //code below from
+  //https://stackoverflow.com/questions/45585542/detecting-when-user-scrolls-to-bottom-of-div-with-react-js 
+  componentDidMount() {
+    this.setState({ isDataLoading: true });
+    this.getData()
+    window.addEventListener('scroll', this.trackScrolling);
   }
+
+  isBottom() {
+    //https://stackoverflow.com/questions/17688595/finding-the-maximum-scroll-position-of-a-page
+    let yMax = document.body.scrollHeight - document.body.clientHeight
+    console.log(yMax)
+    return window.pageYOffset >= yMax || yMax == 1;
+  }
+  
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.trackScrolling);
+  }
+  
+  trackScrolling = () => {
+    const {nextPage} = this.state
+    if (this.isBottom() && nextPage) {
+      //this.setState({ isDataLoading: true });
+      this.getData(true)
+    }
+  };
 
   render() {
     localStorage.setItem("previous_links", JSON.stringify([]));
@@ -219,7 +238,7 @@ class Data extends React.Component {
               <div className="font-weight-bold">No data exists!</div>
             ) : null}
           </div>
-          <div className="col-12 my-4 justify-content-center align-items-center text-center">
+          {/*<div className="col-12 my-4 justify-content-center align-items-center text-center">
             {prevPage ? (
               <a className="col" href={prevPageUrl}>
                 Previous
@@ -232,7 +251,7 @@ class Data extends React.Component {
                 Next
               </a>
             ) : null}
-          </div>
+            </div>*/}
         </div>
       </div>
     );
@@ -240,7 +259,4 @@ class Data extends React.Component {
 }
 
 export default withRouter(Data);
-export function getData() {
-  Data.getNextPage();
-} 
 export let dataLinks = datas;
