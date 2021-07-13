@@ -265,14 +265,12 @@ def add_data_from_site():
         file_path = Path(app.config["UPLOAD_FOLDER"]).joinpath(filename)
         file.save(file_path.as_posix())
         metadata = mutagen.File(file_path.as_posix()).info
-        app.logger.info(metadata.length)
-        app.logger.info(metadata.sample_rate)
-        #wave_file = wave.open(str(file_path), 'rb')
-        #app.logger.info("success")
         frame_rate = metadata.sample_rate
-        #frames = wave_file.getnframes()
-        #rate = wave_file.getframerate()
         clip_duration = metadata.length
+        #wave_file = wave.open(str(file_path), 'rb')
+        #frames = wave_file.getnframes()
+        #frame_rate = wave_file.getframerate()
+        #clip_duration = frames / float(frame_rate)
         #wave_file.close()
         try:
             data = Data(

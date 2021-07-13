@@ -4,7 +4,7 @@ import sys
 import requests
 import json
 import wave
-import mutagen
+
 from pathlib import Path
 
 parser = argparse.ArgumentParser(description="Upload sample data to project")
@@ -61,9 +61,11 @@ for filename in os.listdir(directory):
         print("Audio file does not exist")
         continue
 
-    metadata = mutagen.File(audio_path.as_posix()).info
-    frame_rate = metadata.sample_rate
-    clip_duration = metadata.length
+    with wave.open(str(audio_path), "rb") as wave_file:
+        frame_rate = wave_file.getframerate()
+        frames = wave_file.getnframes()
+        rate = wave_file.getframerate()
+        clip_duration = frames / float(rate)
 
     reference_transcription = args.reference_transcription
     username = args.username.split('.')
