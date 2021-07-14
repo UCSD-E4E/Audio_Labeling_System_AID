@@ -62,16 +62,17 @@ const FormModal = (props) => {
           />
         ) : null}
         {props.formType === "DELETE_LABEL_VALUE" ? (
-          
           <DeleteLabelValueForm
             labelId={props.labelId}
             labelValueId={props.labelValueId}
+            onDelete={props.onExited}
           />
         ) : null}
         {props.formType === "DELETE_LABEL" ? (      
           <DeleteLabelForm
             labelId={props.labelId}
             projectId={props.projectId}
+            onDelete={props.onExited}
             />
         ) : null}
         {props.formType === "UPLOAD_DATA" ? (

@@ -148,6 +148,9 @@ class Label(db.Model):
     def set_label_type(self, label_type_id):
         self.type_id = label_type_id
 
+    def set_label_name(self, name):
+        self.name = name
+
 
 class LabelType(db.Model):
     __tablename__ = "label_type"

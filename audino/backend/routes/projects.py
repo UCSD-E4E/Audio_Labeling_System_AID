@@ -426,6 +426,7 @@ def update_label_for_project(project_id, label_id):
         return jsonify(message="Missing JSON in request"), 400
 
     label_type_id = request.json.get("type", None)
+    label_name = request.json.get("name", None)
 
     if not label_type_id:
         return (
@@ -448,6 +449,7 @@ def update_label_for_project(project_id, label_id):
     try:
         label = Label.query.filter_by(id=label_id, project_id=project_id).first()
         label.set_label_type(label_type_id)
+        label.set_label_name(label_name)
         db.session.commit()
     except Exception as e:
         # TODO: Check for errors here

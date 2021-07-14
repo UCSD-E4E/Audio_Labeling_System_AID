@@ -56,6 +56,7 @@ class DeleteLabelForm extends React.Component {
             successMessage: "Label value has been DELETED",
             errorMessage: null,
           });
+          this.props.onDelete()
         }
       })
       .catch((error) => {
