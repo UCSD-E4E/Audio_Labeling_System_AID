@@ -7,7 +7,7 @@ from werkzeug.urls import url_parse
 
 from backend import app, db
 from backend.models import Project, User, Data, Segmentation
-
+from random import randint
 from . import api
 
 
@@ -424,6 +424,93 @@ def get_next_data_unknown(project_id, data_value):
         ),
         200,
     )
+
+@api.route("/current_user/rec/projects/<int:project_id>/data/<int:data_id>", methods=["GET"])
+def getNextReccomendedData(project_id, data_id):
+    #identity = get_jwt_identity()
+
+    #page = request.args.get("page", 1, type=int)
+    active = "pending"
+
+    try:
+        #request_user = User.query.filter_by(username=identity["username"]).first()
+        project = Project.query.get(project_id)
+        project = Project.query.get(project_id)
+
+        #if request_user not in project.users:
+        #    return jsonify(message="Unauthorized access!"), 401
+
+        segmentations = db.session.query(Segmentation.data_id).distinct().subquery()
+        #Lets set big id to the {username.idenity, username.id}
+        #this would make it fast but aslo render serval data points
+        data = None
+
+        #print(Data.assigned_user_id)
+        #for key in Data.assigned_user_id:
+        #    if request_user.id == Data.assigned_user_id[key]:
+        #        big_key = key
+        #        print(big_key, key)
+        dataPending = (
+            db.session.query(Data)
+            .filter(Data.project_id == project_id)
+            .filter(Data.id != data_id)
+            .filter(Data.id.notin_(segmentations))
+            .distinct()
+            .first()
+        )
+
+        dataReview = (
+                db.session.query(Data)
+                .filter(Data.project_id == project_id)
+                .filter(Data.id != data_id)
+                .filter(Data.is_marked_for_review == True)
+                .distinct()
+                .first()
+            )
+
+        if (dataPending == None and dataReview == None):
+            return (405)
+        elif ((dataPending == None or randint(0, 5) == 0) and dataReview != None):
+            data = (
+                    db.session.query(Data)
+                    .filter(Data.project_id == project_id)
+                    .filter(Data.id != data_id)
+                    .filter(Data.is_marked_for_review == True)
+                    .distinct()
+                    .first()
+                )
+            active = "marked_review"
+        else:
+            data = dataPending
+        
+        
+        response = list(
+            [
+                {
+                    "data_id": data.id,
+                    "filename": data.filename,
+                    "original_filename": data.original_filename,
+                    "created_on": data.created_at.strftime("%B %d, %Y"),
+                    "is_marked_for_review": data.is_marked_for_review,
+                    "number_of_segmentations": len(data.segmentations),
+                    "sampling_rate": data.sampling_rate,
+                    "clip_length": data.clip_length,
+                }
+            ]
+        )
+            
+        return (
+            jsonify(
+                data=response,
+                active=active,
+            ),
+            200,
+        )
+    except Exception as e:
+        message = "Error fetching all data points"
+        app.logger.error(message)
+        app.logger.error(e)
+        return jsonify(message=message), 501
 
 
 @api.route("/current_user/projects/get_all", methods=["GET"])
