@@ -471,19 +471,12 @@ def getNextReccomendedData(project_id, data_id):
         if (dataPending == None and dataReview == None):
             return (405)
         elif ((dataPending == None or randint(0, 5) == 0) and dataReview != None):
-            data = (
-                    db.session.query(Data)
-                    .filter(Data.project_id == project_id)
-                    .filter(Data.id != data_id)
-                    .filter(Data.is_marked_for_review == True)
-                    .distinct()
-                    .first()
-                )
+            data = dataReview
             active = "marked_review"
         else:
             data = dataPending
         
-        
+
         response = list(
             [
                 {
