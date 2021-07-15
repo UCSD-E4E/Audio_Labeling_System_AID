@@ -76,8 +76,8 @@ const Admin = props => {
   };
 
   React.useEffect(() => {
-    this.fetchProjects();
-    this.fetchUsers();
+    fetchProjects();
+    fetchUsers();
   }, []);
 
   const showModal = newState => {

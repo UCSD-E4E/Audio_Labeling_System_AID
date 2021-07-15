@@ -16,7 +16,7 @@ class Annotate extends React.Component {
     const dataId = Number(match.params.dataid);
     const index = window.location.href.indexOf('/projects');
 
-    this.state = {
+    this.initalState = {
       next_data_url: '',
       next_data_id: -1,
       isPlaying: false,
@@ -42,6 +42,7 @@ class Annotate extends React.Component {
       num_of_prev: 0,
       path: window.location.href.substring(0, index)
     };
+    this.state = this.initalState;
     this.lastTime = 0;
     this.labelRef = {};
   }
@@ -62,7 +63,7 @@ class Annotate extends React.Component {
     this.setState({ previous_pages: linksArray, num_of_prev: count });
     const { labelsUrl, dataUrl } = this.state;
     const apiUrl = `/api/current_user/unknown/projects/${projectId}/data/${dataId}`;
-
+    console.log(dataId, "rebuild")
     axios({
       method: 'get',
       url: apiUrl
@@ -85,7 +86,9 @@ class Annotate extends React.Component {
             const next_data_url = `${path}/projects/${projectId}/data/${data[0].data_id}/annotate`;
             this.setState({
               next_data_url,
-              next_data_id: data[0].data_id
+              next_data_id: data[0].data_id,
+              active,
+              next_page
             });
           })
           .catch(error => {
@@ -146,6 +149,7 @@ class Annotate extends React.Component {
           isDataLoading: false
         });
       });
+      console.log(this.state)
   }
 
   handlePlay() {
@@ -413,6 +417,111 @@ class Annotate extends React.Component {
     }
   }
 
+  handldeNextClipExperimental(forceNext = false) {
+    this.handleAllSegmentSave();
+    const {
+      previous_pages,
+      num_of_prev,
+      data,
+      dataId,
+      projectId,
+      next_data_id,
+      next_page,
+      path,
+      active
+    } = this.state;
+
+    let success = true;
+    success = this.checkForSave(success, forceNext);
+    if (!success) {
+      return;
+    }
+
+    const next_page_num = num_of_prev + 1;
+
+    if (num_of_prev < previous_pages.length - 1) {
+      localStorage.setItem('count', JSON.stringify(next_page_num));
+      this.prepareNextClip(previous_pages[next_page_num]);
+      return;
+    }
+    previous_pages[num_of_prev] = dataId;
+    localStorage.setItem('previous_links', JSON.stringify(previous_pages));
+    localStorage.setItem('count', JSON.stringify(next_page_num));
+
+    let next_id = null;
+    Object.keys(data).forEach(key => {
+      key = parseInt(key, 10);
+      if (data[key].data_id === dataId) {
+        try {
+          next_id = data[key + 1].data_id;
+          console.log("1", next_id)
+        } catch (z) {
+          if (next_data_id && data[0].data_id !== next_data_id) {
+            next_id = next_data_id
+            console.log("2", next_id)
+          } else {
+            window.location.href = `${path}/projects/${projectId}/data`;
+            return;
+          }
+        }
+      }
+    });
+    if (next_id === null) {
+      let apiUrl2 = `/api/current_user/projects/${projectId}/data`;
+        console.log("this is the next page:", next_page)
+        apiUrl2 = `${apiUrl2}?page=${next_page}&active=${active}`;
+        console.log(apiUrl2)
+        axios({
+          method: 'get',
+          url: apiUrl2
+        })
+          .then(message => {
+            const { data } = message.data;
+            next_id = data[0].data_id
+            this.prepareNextClip(next_id)
+          })
+          .catch(error => {
+            console.error(error)
+            //window.location.href = `${path}/projects/${projectId}/data`;
+          });
+        return;
+    }
+    this.prepareNextClip(next_id)
+  }
+
+
+  handldePreviousClipExperimental(forceNext = false) {
+    this.handleAllSegmentSave();
+    const { previous_pages, num_of_prev, dataId } = this.state;
+    let success = true;
+    success = this.checkForSave(success, forceNext);
+    if (success) {
+      if (num_of_prev > 0) {
+        const page_num = num_of_prev - 1;
+        const previous = previous_pages[page_num];
+        previous_pages[num_of_prev] = dataId;
+        localStorage.setItem('previous_links', JSON.stringify(previous_pages));
+        localStorage.setItem('count', JSON.stringify(page_num));
+        this.prepareNextClip(previous);
+      } else {
+        console.warn('You have hit the end of the clips you have last seen');
+      }
+    }
+  }
+
+  prepareNextClip(next_id) {
+    const {wavesurfer, projectId, active, next_page} = this.state
+    console.log("gone to dust", next_id)
+    this.initalState["dataId"] = next_id
+    this.initalState["dataUrl"] = `/api/projects/${projectId}/data/${next_id}`
+    this.initalState["segmentationUrl"] = `/api/projects/${projectId}/data/${next_id}/segmentations`
+    this.initalState["active"] = active
+    this.initalState["next_page"] = next_page
+    this.setState(this.initalState)
+    wavesurfer.destroy()
+    this.componentDidMount()
+  }
+
   removeSegment(wavesurfer, selectedSegment) {
     wavesurfer.regions.list[selectedSegment.id].remove();
     this.setState({
@@ -627,15 +736,15 @@ class Annotate extends React.Component {
                     size="lg"
                     type="danger"
                     disabled={isSegmentSaving}
-                    onClick={() => this.handleNextClip(true)}
+                    onClick={() => this.handldeNextClipExperimental(true)}
                     isSubmitting={isSegmentSaving}
                     text="Force Next"
                   />
                 </div>
               )}
               <div className="buttons-container">
-                {this.renderNextPreviousButtons('previous', () => this.handlePreviousClip())}
-                {this.renderNextPreviousButtons('next', () => this.handleNextClip())}
+                {this.renderNextPreviousButtons('previous', () => this.handldePreviousClipExperimental())}
+                {this.renderNextPreviousButtons('next', () => this.handldeNextClipExperimental())}
               </div>
             </div>
           </div>
