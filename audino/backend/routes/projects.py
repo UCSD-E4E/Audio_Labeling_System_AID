@@ -535,7 +535,6 @@ def get_segmentations_for_data(project_id, data_id):
                 "segmentation_id": segment.id,
                 "start_time": segment.start_time,
                 "end_time": segment.end_time,
-                "transcription": segment.transcription,
             }
 
             values = dict()
@@ -544,11 +543,11 @@ def get_segmentations_for_data(project_id, data_id):
                     values[value.label.name] = {
                         "label_id": value.label.id,
                         "values": []
-                        if value.label.label_type.type == "multiselect"
+                        if value.label.label_type.type == "Multi-select"
                         else None,
                     }
 
-                if value.label.label_type.type == "multiselect":
+                if value.label.label_type.type == "Multi-select":
                     values[value.label.name]["values"].append(value.id)
                 else:
                     values[value.label.name]["values"] = value.id
@@ -560,7 +559,6 @@ def get_segmentations_for_data(project_id, data_id):
         response = {
             "filename": data.filename,
             "original_filename": data.original_filename,
-            "reference_transcription": data.reference_transcription,
             "is_marked_for_review": data.is_marked_for_review,
             "segmentations": segmentations,
             "sampling_rate": data.sampling_rate,
@@ -635,8 +633,8 @@ def add_segmentations(project_id, data_id, segmentation_id=None):
     if not request.is_json:
         return jsonify(message="Missing JSON in request"), 400
 
-    start_time = request.json.get("start", None)
-    end_time = request.json.get("end", None)
+    start_time = float(request.json.get("start", None))
+    end_time = float(request.json.get("end", None))
 
     if start_time is None or end_time is None:
         return jsonify(message="Params `start_time` or `end_time` missing"), 400
@@ -649,7 +647,6 @@ def add_segmentations(project_id, data_id, segmentation_id=None):
             400,
         )
 
-    transcription = request.json.get("transcription", None)
     annotations = request.json.get("annotations", dict())
     time_spent = request.json.get("time_spent", 0)/1000 #miliseconds to seconds
     app.logger.info(time_spent)
@@ -674,7 +671,6 @@ def add_segmentations(project_id, data_id, segmentation_id=None):
             end_time=end_time,
             start_time=start_time,
             annotations=annotations,
-            transcription=transcription,
             time_spent=time_spent,
             segmentation_id=segmentation_id,
 
@@ -786,11 +782,11 @@ def get_project_annotations(project_id):
                         values[value.label.name] = {
                             "id": value.label.id,
                             "values": []
-                            if value.label.label_type.type == "multiselect"
+                            if value.label.label_type.type == "Multi-select"
                             else None,
                         }
 
-                    if value.label.label_type.type == "multiselect":
+                    if value.label.label_type.type == "Multi-select":
                         values[value.label.name]["values"].append(
                             {"id": value.id, "value": value.value}
                         )
@@ -804,9 +800,6 @@ def get_project_annotations(project_id):
 
                 data_dict["segmentations"].append(segmentation_dict)
             annotations.append(data_dict)
-        text, csv =  JsonLabelsToCsv.JsonToText(annotations)
-        app.logger.info(f'{type(text)}, {text}')
-        json_return = {'annotations': str(text)}
         app.logger.info("could do this, error isn't here")
     except Exception as e:
         message = "Error fetching annotations for project"
@@ -814,6 +807,8 @@ def get_project_annotations(project_id):
         app.logger.error(e)
         return jsonify(message=message, type="FETCH_ANNOTATIONS_FAILED"), 500
     if ((download_csv) == "true"):
+        text, csv =  JsonLabelsToCsv.JsonToText(annotations)
+        app.logger.info(f'{type(text)}, {text}')
         annotations_to_download = csv
         app.logger.info("here: ", annotations_to_download)
     else:

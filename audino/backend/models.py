@@ -59,10 +59,6 @@ class Data(db.Model):
 
     original_filename = db.Column("original_filename", db.String(100), nullable=False)
 
-    reference_transcription = db.Column(
-        "reference_transcription", db.Text(), nullable=True
-    )
-
     is_marked_for_review = db.Column(
         "is_marked_for_review", db.Boolean(), nullable=False, default=False
     )
@@ -97,7 +93,6 @@ class Data(db.Model):
             "original_filename": self.original_filename,
             "filename": self.filename,
             "url": f"/audios/{self.filename}",
-            "reference_transcription": self.reference_transcription,
             "is_marked_for_review": self.is_marked_for_review,
             "created_at": self.created_at,
             "last_modified": self.last_modified,
@@ -274,8 +269,6 @@ class Segmentation(db.Model):
 
     end_time = db.Column("end_time", db.Float(), nullable=False)
 
-    transcription = db.Column("transcription", db.Text(), nullable=True)
-
     created_at = db.Column(
         "created_at", db.DateTime(), nullable=False, default=db.func.now()
     )
@@ -302,9 +295,6 @@ class Segmentation(db.Model):
     def set_end_time(self, end_time):
         self.end_time = end_time
 
-    def set_transcription(self, transcription):
-        self.transcription = transcription
-
     def set_time_spent(self, time):
         app.logger.info(time)
         time_spent = self.time_spent + time
@@ -316,7 +306,6 @@ class Segmentation(db.Model):
         return {
             "start_time": self.start_time,
             "end_time": self.end_time,
-            "transcription": self.transcription,
             "created_at": self.created_at,
             "last_modified": self.last_modified,
             "time_spent": self.time_spent

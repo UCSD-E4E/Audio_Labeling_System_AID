@@ -99,11 +99,8 @@ class LabelValues extends React.Component {
           />
           <div className="h-100 mt-5">
             <div className="row border-bottom my-3">
-              <div className="col float-left">
-                <h1>Add Label Values</h1>
-              </div>
               <hr />
-              <div className="col float-right">
+              <div className="float-right">
                 <h1 className="text-right">
                   <IconButton
                     icon={faPlusSquare}

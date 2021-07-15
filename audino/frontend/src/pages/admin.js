@@ -2,7 +2,6 @@ import axios from 'axios';
 import React from 'react';
 import { withRouter } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-
 import {
   faPlusSquare,
   faEdit,
@@ -16,370 +15,316 @@ import { IconButton } from '../components/button';
 import Loader from '../components/loader';
 import FormModal from '../containers/modal';
 
-class Admin extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      users: [],
-      projects: [],
-      formType: null,
-      modalShow: false,
-      isUserLoading: false,
-      isProjectLoading: false
-    };
-  }
+const Admin = props => {
+  const [modalState, setModalState] = React.useState({
+    formType: null,
+    modalShow: false,
+    title: null,
+    userId: null,
+    projectId: null,
+    projectName: null,
+    api_key: null
+  });
 
-  componentDidMount() {
-    this.setState({ isUserLoading: true, isProjectLoading: true });
+  const [userState, setUserState] = React.useState({
+    users: [],
+    isUserLoading: false
+  });
+  const [projectState, setProjectState] = React.useState({
+    projects: [],
+    isProjectLoading: false
+  });
 
-    // TODO: Combine these two api calls
+  const fetchProjects = () => {
     axios({
       method: 'get',
       url: '/api/projects'
     })
       .then(response => {
-        this.setState({
+        setProjectState({
+          ...projectState,
           projects: response.data.projects,
           isProjectLoading: false
         });
       })
       .catch(() => {
-        this.setState({
-          // errorMessage: error.response.data.message,
+        setProjectState({
+          ...projectState,
           isProjectLoading: false
         });
       });
+  };
 
+  const fetchUsers = () => {
     axios({
       method: 'get',
       url: '/api/users'
     })
       .then(response => {
-        this.setState({ users: response.data.users, isUserLoading: false });
+        setUserState({
+          ...userState,
+          users: response.data.users,
+          isUserLoading: false
+        });
       })
       .catch(() => {
-        this.setState({
-          // errorMessage: error.response.data.message,
+        setUserState({
+          ...userState,
           isUserLoading: false
         });
       });
-  }
+  };
 
-  handleNewProject() {
-    this.setModalShow(true);
-    this.setState({ formType: 'NEW_PROJECT', title: 'Create New Project' });
-  }
+  React.useEffect(() => {
+    this.fetchProjects();
+    this.fetchUsers();
+  }, []);
 
-  handleEditProject(e, projectId) {
-    this.setModalShow(true);
-    this.setState({
+  const showModal = newState => {
+    setModalState({ ...modalState, ...newState, modalShow: true });
+  };
+
+  const handleNewProject = () => {
+    showModal({ formType: 'NEW_PROJECT', title: 'Create New Project' });
+  };
+
+  const handleEditProject = (e, projectId) => {
+    showModal({
       formType: 'Edit_PROJECT',
       title: 'Edit Project',
       projectId
     });
-  }
+  };
 
-  handleDeleteProject() {
-    this.setModalShow(true);
-    this.setState({ formType: 'DELETE_PROJECT', title: 'Delete Project' });
-  }
+  const handleNewUser = () => {
+    showModal({ formType: 'NEW_USER', title: 'Create New User' });
+  };
 
-  handleNewUser() {
-    this.setModalShow(true);
-    this.setState({ formType: 'NEW_USER', title: 'Create New User' });
-  }
+  const handleEditUser = (e, userId) => {
+    showModal({ formType: 'EDIT_USER', title: 'Edit User', userId });
+  };
 
-  handleEditUser(e, userId) {
-    this.setModalShow(true);
-    this.setState({ formType: 'EDIT_USER', title: 'Edit User', userId });
-  }
-
-  handleDeleteUser(e, userId) {
+  const handleDeleteUser = (e, userId) => {
     // TODO: CREATE MODAL TO CONFRIM BUT FOR NOW MAKE DEV BUTTON
-    this.setModalShow(true);
-    this.setState({ formType: 'DELETE_USER', title: 'Delete User', userId });
-  }
+    showModal({ formType: 'DELETE_USER', title: 'Delete User', userId });
+  };
 
-  handleAddLabelsToProject(e, projectId) {
-    const { history } = this.props;
-    history.push(`/projects/${projectId}/labels`);
-  }
-
-  handleAddUsersToProject(e, projectId, projectName) {
-    this.setModalShow(true);
-    this.setState({
+  const handleAddUsersToProject = (e, projectId, projectName) => {
+    showModal({
       formType: 'MANAGE_PROJECT_USERS',
       title: `Project ${projectName}: Manage User Access`,
       projectId
     });
-  }
+  };
 
-  handleUploadDataToProject(e, projectName, projectId, api_key) {
-    this.setModalShow(true);
-    this.setState({
+  const handleUploadDataToProject = (e, projectName, projectId, api_key) => {
+    showModal({
       formType: 'UPLOAD_DATA',
       title: `Project ${projectName}: Upload Project Audio Files`,
       projectId,
       projectName,
       api_key
     });
-  }
+  };
 
-  handleDownloadDataToProject(e, projectName, projectId, api_key) {
-    this.setModalShow(true);
-    this.setState({
+  const handleDownloadDataToProject = (e, projectName, projectId, api_key) => {
+    showModal({
       formType: 'DOWNLOAD_DATA',
       title: `Project ${projectName}: DOWNLOAD ANNOTATIONS`,
       projectId,
       projectName,
       api_key
     });
-  }
+  };
 
-  setModalShow(modalShow) {
-    this.setState({ modalShow });
-  }
+  const handleAddLabelsToProject = (e, projectId) => {
+    const { history } = props;
+    history.push(`/projects/${projectId}/labels`);
+  };
 
-  refreshPage() {
-    const { history } = this.props;
-    history.replace({ pathname: '/empty' });
-    setTimeout(() => {
-      history.replace({ pathname: '/admin' });
-    });
-  }
+  const updatePage = () => {
+    fetchProjects();
+    fetchUsers();
+  };
 
-  _export_raw(name, data) {
-    const urlObject = window.URL || window.webkitURL || window;
-    const export_blob = new Blob(data);
-
-    if ('msSaveBlob' in navigator) {
-      navigator.msSaveBlob(export_blob, name);
-    } else if ('download' in HTMLAnchorElement.prototype) {
-      const save_link = document.createElementNS('http://www.w3.org/1999/xhtml', 'a');
-      save_link.href = urlObject.createObjectURL(export_blob);
-      save_link.download = name;
-      this._fake_click(save_link);
-    } else {
-      throw new Error('Neither a[download] nor msSaveBlob is available');
-    }
-  }
-
-  _fake_click(obj) {
-    const ev = document.createEvent('MouseEvents');
-    ev.initMouseEvent(
-      'click',
-      true,
-      false,
-      window,
-      0,
-      0,
-      0,
-      0,
-      0,
-      false,
-      false,
-      false,
-      false,
-      0,
-      null
-    );
-    obj.dispatchEvent(ev);
-  }
-
-  render() {
-    const {
-      users,
-      projects,
-      title,
-      isProjectLoading,
-      isUserLoading,
-      modalShow,
-      formType,
-      userId,
-      projectId,
-      api_key,
-      projectName
-    } = this.state;
-
-    return (
-      <div>
-        <Helmet>
-          <title>Admin Panel</title>
-        </Helmet>
-        <div className="container h-100">
-          <FormModal
-            onExited={() => this.refreshPage()}
-            formType={formType}
-            title={title}
-            show={modalShow}
-            userId={userId}
-            projectId={projectId}
-            projectName={projectName}
-            api_key={api_key}
-            onHide={() => this.setModalShow(false)}
-          />
-          <div className="h-100 mt-5">
-            <div className="row border-bottom my-3">
-              <div className="col float-left">
-                <h1>Projects</h1>
-              </div>
-              <hr />
-              <div className="col float-right">
-                <h1 className="text-right">
-                  <IconButton
-                    icon={faPlusSquare}
-                    size="lg"
-                    title="Create new project"
-                    onClick={e => this.handleNewProject(e)}
-                  />
-                </h1>
-              </div>
-              {!isProjectLoading && projects.length > 0 ? (
-                <table className="table table-striped">
-                  <thead>
-                    <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Name</th>
-                      <th scope="col">Created By</th>
-                      <th scope="col">API Key</th>
-                      <th scope="col">Options</th>
+  return (
+    <div>
+      <Helmet>
+        <title>Admin Panel</title>
+      </Helmet>
+      <div className="container h-100">
+        <FormModal
+          onExited={() => updatePage()}
+          formType={modalState.formType}
+          title={modalState.title}
+          show={modalState.modalShow}
+          userId={modalState.userId}
+          projectId={modalState.projectId}
+          projectName={modalState.projectName}
+          api_key={modalState.api_key}
+          onHide={() => setModalState({ ...modalState, modalShow: false })}
+        />
+        <div className="h-100 mt-5">
+          <div className="row border-bottom my-3">
+            <div className="col float-left">
+              <h1>Projects</h1>
+            </div>
+            <hr />
+            <div className="col float-right">
+              <h1 className="text-right">
+                <IconButton
+                  icon={faPlusSquare}
+                  size="lg"
+                  title="Create new project"
+                  onClick={e => handleNewProject(e)}
+                />
+              </h1>
+            </div>
+            {!projectState.isProjectLoading && projectState.projects.length > 0 ? (
+              <table className="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Created By</th>
+                    <th scope="col">API Key</th>
+                    <th scope="col">Options</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {projectState.projects.map((project, index) => (
+                    <tr key={index}>
+                      <th scope="row" className="align-middle">
+                        {index + 1}
+                      </th>
+                      <td className="align-middle">{project.name}</td>
+                      <td className="align-middle">{project.created_by}</td>
+                      <td className="align-middle">{project.api_key}</td>
+                      <td className="align-middle">
+                        <IconButton
+                          icon={faUserPlus}
+                          size="sm"
+                          title="Manage users"
+                          onClick={e =>
+                            handleAddUsersToProject(e, project.project_id, project.name)
+                          }
+                        />
+                        <IconButton
+                          icon={faTags}
+                          size="sm"
+                          title="Manage labels"
+                          onClick={e => handleAddLabelsToProject(e, project.project_id)}
+                        />
+                        <IconButton
+                          icon={faEdit}
+                          size="sm"
+                          title="Edit Annotations"
+                          onClick={e => handleEditProject(e, project.project_id)}
+                        />
+                        <div />
+                        <IconButton
+                          icon={faUpload}
+                          size="sm"
+                          title="Upload Data"
+                          onClick={e =>
+                            handleUploadDataToProject(
+                              e,
+                              project.name,
+                              project.project_id,
+                              project.api_key
+                            )
+                          }
+                        />
+                        <IconButton
+                          icon={faDownload}
+                          size="sm"
+                          title="Download Data"
+                          onClick={e =>
+                            handleDownloadDataToProject(
+                              e,
+                              project.name,
+                              project.project_id,
+                              project.api_key
+                            )
+                          }
+                        />
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {projects.map((project, index) => (
-                      <tr key={index}>
-                        <th scope="row" className="align-middle">
-                          {index + 1}
-                        </th>
-                        <td className="align-middle">{project.name}</td>
-                        <td className="align-middle">{project.created_by}</td>
-                        <td className="align-middle">{project.api_key}</td>
-                        <td className="align-middle">
-                          <IconButton
-                            icon={faUserPlus}
-                            size="sm"
-                            title="Manage users"
-                            onClick={e =>
-                              this.handleAddUsersToProject(e, project.project_id, project.name)
-                            }
-                          />
-                          <IconButton
-                            icon={faTags}
-                            size="sm"
-                            title="Manage labels"
-                            onClick={e => this.handleAddLabelsToProject(e, project.project_id)}
-                          />
-                          <IconButton
-                            icon={faEdit}
-                            size="sm"
-                            title="Edit Annotations"
-                            onClick={e => this.handleEditProject(e, project.project_id)}
-                          />
-                          <div />
-                          <IconButton
-                            icon={faUpload}
-                            size="sm"
-                            title="Upload Data"
-                            onClick={e =>
-                              this.handleUploadDataToProject(
-                                e,
-                                project.name,
-                                project.project_id,
-                                project.api_key
-                              )
-                            }
-                          />
-                          <IconButton
-                            icon={faDownload}
-                            size="sm"
-                            title="Download Data"
-                            onClick={e =>
-                              this.handleDownloadDataToProject(
-                                e,
-                                project.name,
-                                project.project_id,
-                                project.api_key
-                              )
-                            }
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : null}
+                  ))}
+                </tbody>
+              </table>
+            ) : null}
+          </div>
+          <div className="row my-4 justify-content-center align-items-center">
+            {projectState.isProjectLoading ? <Loader /> : null}
+            {!projectState.isProjectLoading && projectState.projects.length === 0 ? (
+              <div className="font-weight-bold">No projects exists!</div>
+            ) : null}
+          </div>
+          <div className="row mt-2">
+            <div className="col float-left">
+              <h1>Users</h1>
             </div>
-            <div className="row my-4 justify-content-center align-items-center">
-              {isProjectLoading ? <Loader /> : null}
-              {!isProjectLoading && projects.length === 0 ? (
-                <div className="font-weight-bold">No projects exists!</div>
-              ) : null}
+            <div className="col float-right">
+              <h1 className="text-right">
+                <IconButton
+                  icon={faPlusSquare}
+                  size="lg"
+                  title="Create new user"
+                  onClick={e => handleNewUser(e)}
+                />
+              </h1>
             </div>
-            <div className="row mt-2">
-              <div className="col float-left">
-                <h1>Users</h1>
-              </div>
-              <div className="col float-right">
-                <h1 className="text-right">
-                  <IconButton
-                    icon={faPlusSquare}
-                    size="lg"
-                    title="Create new user"
-                    onClick={e => this.handleNewUser(e)}
-                  />
-                </h1>
-              </div>
-              {!isUserLoading && users.length > 0 ? (
-                <table className="table table-striped">
-                  <thead>
-                    <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Username</th>
-                      <th scope="col">Role</th>
-                      <th scope="col">Created On</th>
-                      <th scope="col">Options</th>
+            {!userState.isUserLoading && userState.users.length > 0 ? (
+              <table className="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Role</th>
+                    <th scope="col">Created On</th>
+                    <th scope="col">Options</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {userState.users.map((user, index) => (
+                    <tr key={index}>
+                      <th scope="row" className="align-middle">
+                        {index + 1}
+                      </th>
+                      <td className="align-middle">{user.username}</td>
+                      <td className="align-middle">{user.role}</td>
+                      <td className="align-middle">{user.created_on}</td>
+                      <td className="align-middle">
+                        <IconButton
+                          icon={faEdit}
+                          size="sm"
+                          title="Edit user"
+                          onClick={e => handleEditUser(e, user.user_id)}
+                        />
+                        <IconButton
+                          icon={faTrash}
+                          size="sm"
+                          title="Delete User"
+                          onClick={e => handleDeleteUser(e, user.user_id)}
+                        />
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {users.map((user, index) => (
-                      <tr key={index}>
-                        <th scope="row" className="align-middle">
-                          {index + 1}
-                        </th>
-                        <td className="align-middle">{user.username}</td>
-                        <td className="align-middle">{user.role}</td>
-                        <td className="align-middle">{user.created_on}</td>
-                        <td className="align-middle">
-                          <IconButton
-                            icon={faEdit}
-                            size="sm"
-                            title="Edit user"
-                            onClick={e => this.handleEditUser(e, user.user_id)}
-                          />
-                          <IconButton
-                            icon={faTrash}
-                            size="sm"
-                            title="Delete User"
-                            onClick={e => this.handleDeleteUser(e, user.user_id)}
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : null}
-            </div>
-            <div className="row my-4 justify-content-center align-items-center">
-              {isUserLoading ? <Loader /> : null}
-              {!isUserLoading && users.length === 0 ? (
-                <div className="font-weight-bold">No user exists!</div>
-              ) : null}
-            </div>
+                  ))}
+                </tbody>
+              </table>
+            ) : null}
+          </div>
+          <div className="row my-4 justify-content-center align-items-center">
+            {userState.isUserLoading ? <Loader /> : null}
+            {!userState.isUserLoading && userState.users.length === 0 ? (
+              <div className="font-weight-bold">No user exists!</div>
+            ) : null}
           </div>
         </div>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 export default withRouter(Admin);
