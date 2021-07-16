@@ -355,3 +355,19 @@ class User(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
+
+class Logs(db.Model):
+    __tablename__ = "logs"
+
+    id = db.Column("id", db.Integer(), primary_key=True)
+    project_id = db.Column("project_id", db.Integer(), db.ForeignKey("project.id"), nullable=True)
+    created_at = db.Column("created_at", db.DateTime(), nullable=False, default=db.func.now())
+    created_by = db.Column("created_by", db.Integer(), db.ForeignKey("user.id"), nullable=False)
+    message = db.Column("message", db.String(100), nullable=False)
+    def to_dict(self):
+        return {
+            "project_id": self.project_id,
+            "created_at": self.created_at,
+            "created_by": self.created_by,
+            "message": self.message
+        }

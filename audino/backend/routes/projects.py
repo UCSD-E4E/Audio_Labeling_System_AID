@@ -10,7 +10,7 @@ from backend.models import Project, User, Label, Data, Segmentation, LabelValue,
 
 from . import api
 from .data import generate_segmentation
-
+from .logger import post_log_msg
 from backend.routes import JsonLabelsToCsv;
 
 def generate_api_key():
@@ -694,11 +694,12 @@ def add_segmentations(project_id, data_id, segmentation_id=None):
         message = "Segmentation created"
         operation_type = "SEGMENTATION_CREATED"
         status = 201
+        post_log_msg("Segmentation Created", request_user.id, project_id)
     else:
         message = "Segmentation updated"
         operation_type = "SEGMENTATION_UPDATED"
         status = 204
-
+    post_log_msg("Segmentation Created", request_user.id, project_id)
     return (
         jsonify(segmentation_id=segmentation.id, message=message, type=operation_type),
         status,
