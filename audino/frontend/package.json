@@ -14,23 +14,28 @@
     "axios": "^0.21.1",
     "bootstrap": "^4.4.1",
     "colormap": "^2.3.1",
+    "debounce": "^1.2.1",
+    "history": "^5.0.0",
     "jquery": "^3.5.0",
+    "load-script": "^1.0.0",
     "popper.js": "^1.16.1",
+    "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-bootstrap": "^1.0.1",
     "react-dom": "^16.13.1",
     "react-helmet": "^6.0.0",
     "react-redux": "^7.2.0",
+    "react-router": "^5.2.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.1",
     "redux": "^4.0.5",
-    "wavesurfer.js": "^3.3.3"
+    "wavesurfer.js": "^5.1.0"
   },
   "proxy": "http://backend:5000",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "lint": "",
+    "lint": "eslint ./src --fix",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -55,8 +60,8 @@
     "eslint-config-airbnb": "^18.1.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-react": "^7.19.0",
-    "prettier": "^2.0.4",
     "pretty-quick": "^2.0.1"
   },
   "license": "MIT"

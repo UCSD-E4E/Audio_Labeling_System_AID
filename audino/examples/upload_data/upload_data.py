@@ -39,9 +39,11 @@ parser.add_argument(
     help="List of segmentations for the audio",
     default=[],
 )
-parser.add_argument("--port", type=int, help="Port to make request to", default=80)
+parser.add_argument("--port", type=int, help="Port to make request to",
+                    default=80)
 
-parser.add_argument("--api_key", type=str, help="Port to make request to", default=80)
+parser.add_argument("--api_key", type=str, help="Port to make request to",
+                    default=80)
 
 args = parser.parse_args()
 
@@ -72,7 +74,8 @@ values = {
 
 print("Creating datapoint")
 response = requests.post(
-    f"http://{args.host}:{args.port}/api/data", files=file, data=values, headers=headers
+    f"http://{args.host}:{args.port}/api/data", files=file, data=values,
+    headers=headers
 )
 
 if response.status_code == 201:

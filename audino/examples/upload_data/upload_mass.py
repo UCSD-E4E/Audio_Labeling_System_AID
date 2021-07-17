@@ -40,9 +40,11 @@ parser.add_argument(
     help="List of segmentations for the audio",
     default=[],
 )
-parser.add_argument("--port", type=int, help="Port to make request to", default=80)
+parser.add_argument("--port", type=int, help="Port to make request to",
+                    default=80)
 
-parser.add_argument("--api_key", type=str, help="Port to make request to", default=80)
+parser.add_argument("--api_key", type=str, help="Port to make request to",
+                    default=80)
 
 args = parser.parse_args()
 
@@ -53,7 +55,7 @@ directory = os.path.normcase(args.audio_file)
 for filename in os.listdir(directory):
     print(os.path.join(directory, filename))
     audio_path = Path(os.path.join(directory, filename))
-    #audio_path = os.path.join(directory, filename)
+    # audio_path = os.path.join(directory, filename)
     audio_filename = audio_path.name
     if audio_path.is_file():
         audio_obj = open(audio_path.resolve(), "rb")
@@ -87,7 +89,8 @@ for filename in os.listdir(directory):
 
     print("Creating datapoint")
     response = requests.post(
-        f"http://{args.host}:{args.port}/api/data", files=file, data=values, headers=headers
+        f"http://{args.host}:{args.port}/api/data", files=file, data=values,
+        headers=headers
     )
 
     if response.status_code == 201:

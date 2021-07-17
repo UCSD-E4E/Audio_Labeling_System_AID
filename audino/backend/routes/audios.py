@@ -1,7 +1,6 @@
 import os
 
 from flask import send_from_directory, jsonify
-from flask_login import login_required, current_user
 
 from backend import app
 

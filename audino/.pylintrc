@@ -1,0 +1,5 @@
+[MESSAGES CONTROL]
+#disable=all
+enable=all
+#enable=import-error,
+#       import-self

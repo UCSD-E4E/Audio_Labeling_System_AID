@@ -1,32 +1,28 @@
-import axios from "axios";
-import React from "react";
+import axios from 'axios';
+import React from 'react';
 
-import { withRouter } from "react-router";
-import { withStore } from "@spyna/react-store";
+import { withRouter } from 'react-router';
+import { withStore } from '@spyna/react-store';
 
-import Alert from "../../components/alert";
-import { Button } from "../../components/button";
-import LabelValues from "../../pages/labelValues"
+import Alert from '../../components/alert';
+import { Button } from '../../components/button';
+
 class CreateLabelValueForm extends React.Component {
   constructor(props) {
     super(props);
 
-    const labelId = this.props.labelId;
+    const { labelId } = this.props;
 
     this.initialState = {
       labelId,
       value: null,
-      errorMessage: "",
-      successMessage: "",
+      errorMessage: '',
+      successMessage: '',
       isSubmitting: false,
-      createLabelValueUrl: `/api/labels/${labelId}/values`,
+      createLabelValueUrl: `/api/labels/${labelId}/values`
     };
 
-    this.state = Object.assign({}, this.initialState);
-  }
-
-  resetState() {
-    this.setState(this.initialState);
+    this.state = { ...this.initialState };
   }
 
   handleLabelValueChange(e) {
@@ -40,37 +36,37 @@ class CreateLabelValueForm extends React.Component {
 
     const { value, createLabelValueUrl } = this.state;
 
-    if (!value || value === "") {
+    if (!value || value === '') {
       this.setState({
         isSubmitting: false,
-        errorMessage: "Please enter a valid label value!",
-        successMessage: "",
+        errorMessage: 'Please enter a valid label value!',
+        successMessage: ''
       });
       return;
     }
 
     axios({
-      method: "post",
+      method: 'post',
       url: createLabelValueUrl,
       data: {
-        value,
-      },
+        value
+      }
     })
-      .then((response) => {
+      .then(response => {
         if (response.status === 201) {
           this.resetState();
           this.form.reset();
 
           this.setState({
-            successMessage: response.data.message,
+            successMessage: response.data.message
           });
         }
       })
-      .catch((error) => {
+      .catch(error => {
         this.setState({
           errorMessage: error.response.data.message,
-          successMessage: "",
-          isSubmitting: false,
+          successMessage: '',
+          isSubmitting: false
         });
       });
   }
@@ -78,9 +74,13 @@ class CreateLabelValueForm extends React.Component {
   handleAlertDismiss(e) {
     e.preventDefault();
     this.setState({
-      successMessage: "",
-      errorMessage: "",
+      successMessage: '',
+      errorMessage: ''
     });
+  }
+
+  resetState() {
+    this.setState(this.initialState);
   }
 
   render() {
@@ -91,20 +91,22 @@ class CreateLabelValueForm extends React.Component {
           <form
             className="col-6"
             name="new_label_value"
-            ref={(el) => (this.form = el)}
+            ref={el => {
+              this.form = el;
+            }}
           >
             {errorMessage ? (
               <Alert
                 type="danger"
                 message={errorMessage}
-                onClose={(e) => this.handleAlertDismiss(e)}
+                onClose={e => this.handleAlertDismiss(e)}
               />
             ) : null}
             {successMessage ? (
               <Alert
                 type="success"
                 message={successMessage}
-                onClose={(e) => this.handleAlertDismiss(e)}
+                onClose={e => this.handleAlertDismiss(e)}
               />
             ) : null}
             <div className="form-group">
@@ -113,9 +115,9 @@ class CreateLabelValueForm extends React.Component {
                 className="form-control"
                 id="label_value"
                 placeholder="Label Value"
-                autoFocus={true}
-                required={true}
-                onChange={(e) => this.handleLabelValueChange(e)}
+                autoFocus
+                required
+                onChange={e => this.handleLabelValueChange(e)}
               />
             </div>
             <div className="form-row">
@@ -123,8 +125,8 @@ class CreateLabelValueForm extends React.Component {
                 <Button
                   size="lg"
                   type="primary"
-                  disabled={isSubmitting ? true : false}
-                  onClick={(e) => this.handleLabelValueCreation(e)}
+                  disabled={!!isSubmitting}
+                  onClick={e => this.handleLabelValueCreation(e)}
                   isSubmitting={isSubmitting}
                   text="Save"
                 />

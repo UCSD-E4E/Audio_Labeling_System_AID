@@ -1,11 +1,10 @@
-import React from "react";
+import React from 'react';
 
-const Error = (props) => {
+const Error = props => {
+  const { message } = props;
   return (
     <div className="container h-75 text-center">
-      <div className="row h-100 justify-content-center align-items-center">
-        {props.message}
-      </div>
+      <div className="row h-100 justify-content-center align-items-center">{message}</div>
     </div>
   );
 };

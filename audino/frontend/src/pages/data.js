@@ -1,66 +1,57 @@
-import axios from "axios";
-import React from "react";
-import { Helmet } from "react-helmet";
-import { withRouter } from "react-router-dom";
+import axios from 'axios';
+import React from 'react';
+import { Helmet } from 'react-helmet';
+import { withRouter } from 'react-router-dom';
 
-import Loader from "../components/loader";
+import Loader from '../components/loader';
 
-var datas = [];
+const datas = [];
 
 class Data extends React.Component {
   constructor(props) {
     super(props);
+    const { location, match } = this.props;
+    const projectId = Number(match.params.id);
 
-    const projectId = Number(this.props.match.params.id);
-
-    const { location } = this.props;
     const params = new URLSearchParams(location.search);
     this.state = {
       projectId,
       data: [],
-      active: params.get("active") || "pending",
-      page: params.get("page") || 1,
+      active: params.get('active') || 'pending',
+      page: params.get('page') || 1,
       count: {
         pending: 0,
         completed: 0,
         all: 0,
-        marked_review: 0,
+        marked_review: 0
       },
       apiUrl: `/api/current_user/projects/${projectId}/data`,
       tabUrls: {
-        pending: this.prepareUrl(projectId, 1, "pending"),
-        completed: this.prepareUrl(projectId, 1, "completed"),
-        all: this.prepareUrl(projectId, 1, "all"),
-        marked_review: this.prepareUrl(projectId, 1, "marked_review"),
+        pending: this.prepareUrl(projectId, 1, 'pending'),
+        completed: this.prepareUrl(projectId, 1, 'completed'),
+        all: this.prepareUrl(projectId, 1, 'all'),
+        marked_review: this.prepareUrl(projectId, 1, 'marked_review')
       },
       nextPage: null,
       prevPage: null,
-      isDataLoading: false,
+      isDataLoading: false
     };
-  }
-
-  prepareUrl(projectId, page, active) {
-    return `/projects/${projectId}/data?page=${page}&active=${active}`;
   }
 
   componentDidMount() {
     this.setState({ isDataLoading: true });
-    let { apiUrl, page, active } = this.state;
+    let { apiUrl } = this.state;
+    let { page, active } = this.state;
     apiUrl = `${apiUrl}?page=${page}&active=${active}`;
 
     axios({
-      method: "get",
-      url: apiUrl,
+      method: 'get',
+      url: apiUrl
     })
-      .then((response) => {
-        const {
-          data,
-          count,
-          active,
-          page,
-          next_page,
-          prev_page,
-        } = response.data;
+      .then(response => {
+        const { data, count, next_page, prev_page } = response.data;
+        page = response.data.page;
+        active = response.data.active;
         this.setState({
           data,
           count,
@@ -68,54 +59,32 @@ class Data extends React.Component {
           page,
           nextPage: next_page,
           prevPage: prev_page,
-          isDataLoading: false,
+          isDataLoading: false
         });
       })
-      .catch((error) => {
+      .catch(error => {
+        console.error(error);
         this.setState({
-          errorMessage: error.response.data.message,
-          isDataLoading: false,
+          isDataLoading: false
         });
       });
-    //datas = data;
   }
 
   getNextPage() {
-    const {
-      projectId,
-      isDataLoading,
-      data,
-      count,
-      active,
-      page,
-      nextPage,
-      prevPage,
-      tabUrls,
-    } = this.state;
+    const { projectId, data } = this.state;
 
-   /* Array data
+    return { projectId, data };
+  }
 
-    data.map((data, index) => {
-      href=`/projects/${projectId}/data/${data["data_id"]}/annotate`
-    });*/
-    return projectId, data;
+  prepareUrl(projectId, page, active) {
+    return `/projects/${projectId}/data?page=${page}&active=${active}`;
   }
 
   render() {
-    localStorage.setItem("previous_links", JSON.stringify([]));
-    localStorage.setItem("count", JSON.stringify(0));
-    const {
-      projectId,
-      isDataLoading,
-      data,
-      count,
-      active,
-      page,
-      nextPage,
-      prevPage,
-      tabUrls,
-    } = this.state;
-    datas = data
+    localStorage.setItem('previous_links', JSON.stringify([]));
+    localStorage.setItem('count', JSON.stringify(0));
+    const { projectId, isDataLoading, data, count, active, page, nextPage, prevPage, tabUrls } =
+      this.state;
     const nextPageUrl = this.prepareUrl(projectId, nextPage, active);
     const prevPageUrl = this.prepareUrl(projectId, prevPage, active);
 
@@ -136,44 +105,35 @@ class Data extends React.Component {
                 <div className="col justify-content-left my-3">
                   <ul className="nav nav-pills nav-fill">
                     <li className="nav-item">
-                      {/*  See: https://github.com/ReactTraining/react-router/issues/7293 */}
                       <a
-                        className={`nav-link ${
-                          active === "pending" ? "active" : null
-                        }`}
-                        href={tabUrls["pending"]}
+                        className={`nav-link ${active === 'pending' ? 'active' : null}`}
+                        href={tabUrls.pending}
                       >
-                        Yet to annotate ({count["pending"]})
+                        Yet to annotate ({count.pending})
                       </a>
                     </li>
                     <li className="nav-item">
                       <a
-                        className={`nav-link ${
-                          active === "completed" ? "active" : null
-                        }`}
-                        href={tabUrls["completed"]}
+                        className={`nav-link ${active === 'completed' ? 'active' : null}`}
+                        href={tabUrls.completed}
                       >
-                        Annotated ({count["completed"]})
+                        Annotated ({count.completed})
                       </a>
                     </li>
                     <li className="nav-item">
                       <a
-                        className={`nav-link ${
-                          active === "all" ? "active" : null
-                        }`}
-                        href={tabUrls["all"]}
+                        className={`nav-link ${active === 'all' ? 'active' : null}`}
+                        href={tabUrls.all}
                       >
-                        All ({count["all"]})
+                        All ({count.all})
                       </a>
                     </li>
                     <li className="nav-item">
                       <a
-                        className={`nav-link ${
-                          active === "marked_review" ? "active" : null
-                        }`}
-                        href={tabUrls["marked_review"]}
+                        className={`nav-link ${active === 'marked_review' ? 'active' : null}`}
+                        href={tabUrls.marked_review}
                       >
-                        Marked for review ({count["marked_review"]})
+                        Marked for review ({count.marked_review})
                       </a>
                     </li>
                   </ul>
@@ -188,22 +148,16 @@ class Data extends React.Component {
                       </tr>
                     </thead>
                     <tbody>
-                      {data.map((data, index) => {
+                      {data.map((item, index) => {
                         return (
                           <tr key={index}>
                             <td className="align-middle">
-                              <a
-                                href={`/projects/${projectId}/data/${data["data_id"]}/annotate`}
-                              >
-                                {data["original_filename"]}
+                              <a href={`/projects/${projectId}/data/${item.data_id}/annotate`}>
+                                {item.original_filename}
                               </a>
                             </td>
-                            <td className="align-middle">
-                              {data["number_of_segmentations"]}
-                            </td>
-                            <td className="align-middle">
-                              {data["created_on"]}
-                            </td>
+                            <td className="align-middle">{item.number_of_segmentations}</td>
+                            <td className="align-middle">{item.created_on}</td>
                           </tr>
                         );
                       })}
@@ -242,5 +196,5 @@ class Data extends React.Component {
 export default withRouter(Data);
 export function getData() {
   Data.getNextPage();
-} 
-export let dataLinks = datas;
+}
+export const dataLinks = datas;

@@ -9,32 +9,32 @@ const pckg = require(path.join(rootDir, 'package.json'));
 
 // inject JS version number
 const jsVersionPlugin = new webpack.DefinePlugin({
-    __VERSION__: JSON.stringify(pckg.version)
+  __VERSION__: JSON.stringify(pckg.version)
 });
 
 module.exports = {
-    context: rootDir,
-    mode: 'development',
-    output: {
-        libraryTarget: 'umd',
-        umdNamedDefine: true,
-        globalObject: 'this'
-    },
-    performance: {
-        hints: false
-    },
-    module: {
-        rules: [
-            {
-                test: /\.js$/,
-                exclude: /node_modules/,
-                use: [
-                    {
-                        loader: 'babel-loader'
-                    }
-                ]
-            }
+  context: rootDir,
+  mode: 'development',
+  output: {
+    libraryTarget: 'umd',
+    umdNamedDefine: true,
+    globalObject: 'this'
+  },
+  performance: {
+    hints: false
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'babel-loader'
+          }
         ]
-    },
-    plugins: [jsVersionPlugin]
+      }
+    ]
+  },
+  plugins: [jsVersionPlugin]
 };

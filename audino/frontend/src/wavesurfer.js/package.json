@@ -101,5 +101,8 @@
     "*.html": [
       "htmlhint"
     ]
+  },
+  "dependencies": {
+    "debounce": "^1.2.1"
   }
 }

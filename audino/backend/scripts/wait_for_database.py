@@ -8,8 +8,11 @@ from sqlalchemy.orm import sessionmaker
 
 parser = argparse.ArgumentParser(description="Check if MySQL is up")
 
-parser.add_argument("--poll_seconds", type=int, help="Wait for `poll` seconds before retrying", default=5)
-parser.add_argument("--max_retries", type=int, help="Maximum number of retries for connection", default=30)
+parser.add_argument("--poll_seconds", type=int,
+                    help="Wait for `poll` seconds before retrying", default=5)
+parser.add_argument("--max_retries", type=int,
+                    help="Maximum number of retries for connection",
+                    default=30)
 
 args = parser.parse_args()
 

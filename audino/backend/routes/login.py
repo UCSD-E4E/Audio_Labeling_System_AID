@@ -38,33 +38,36 @@ def login():
     username = request.json.get("username", None)
     password = request.json.get("password", None)
     app.logger.info(username)
-    
+
     if not username:
         return (
-            jsonify(message="Please provide your username!", type="USERNAME_MISSING"),
+            jsonify(message="Please provide your username!",
+                    type="USERNAME_MISSING"),
             400,
         )
     if not password:
         return (
             jsonify(
-                {"message": "Please provide your password!", "type": "PASSWORD_MISSING"}
+                {"message": "Please provide your password!",
+                 "type": "PASSWORD_MISSING"}
             ),
             400,
         )
-    
+
     user = User.query.filter_by(username=username).first()
 
     if user is None or not user.check_password(password):
         return (
             jsonify(
-                message="Incorrect username or password!", type="INCORRECT_CREDENTIALS"
+                message="Incorrect username or password!",
+                type="INCORRECT_CREDENTIALS"
             ),
             401,
         )
-    
+
     is_admin = True if user.role.role == "admin" else False
     app.logger.info(user.id)
-    data = {"username": username, "is_admin": is_admin, "user_id": user.id}#json.loads({"username": "hello", "is_admin": is_admin, "user_id": user.id})
+    data = {"username": username, "is_admin": is_admin, "user_id": user.id}
     app.logger.info(data)
     try:
         access_token = create_access_token(
@@ -81,8 +84,9 @@ def login():
     app.logger.info("here")
     access_jti = get_jti(encoded_token=access_token)
 
-    redis_client.set(access_jti, "false", app.config["JWT_ACCESS_TOKEN_EXPIRES"] * 1.2)
-    
+    redis_client.set(access_jti, "false",
+                     app.config["JWT_ACCESS_TOKEN_EXPIRES"] * 1.2)
+
     return (
         jsonify(
             access_token=access_token,

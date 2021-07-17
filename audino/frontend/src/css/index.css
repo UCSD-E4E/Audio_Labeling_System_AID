@@ -42,6 +42,12 @@ body,
   z-index: 1;
 }
 
+.center-top {
+  top: 2%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 .hidden {
   visibility: hidden;
 }

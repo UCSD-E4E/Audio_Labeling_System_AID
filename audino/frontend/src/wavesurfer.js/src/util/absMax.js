@@ -10,7 +10,7 @@ import utilmin from './min';
  * @since 4.3.0
  */
 export default function absMax(values) {
-    const max = utilMax(values);
-    const min = utilmin(values);
-    return -min > max ? -min : max;
+  const max = utilMax(values);
+  const min = utilmin(values);
+  return -min > max ? -min : max;
 }

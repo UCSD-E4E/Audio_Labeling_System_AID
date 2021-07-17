@@ -1,54 +1,56 @@
-import React from "react";
-import axios from "axios";
-import { withRouter } from "react-router";
-import { withStore } from "@spyna/react-store";
+import React from 'react';
+import axios from 'axios';
+import { withRouter } from 'react-router';
+import { withStore } from '@spyna/react-store';
 
-import Alert from "../../components/alert";
-import { Button } from "../../components/button";
-import Loader from "../../components/loader";
-import { setAuthorizationToken } from "../../utils";
+import Alert from '../../components/alert';
+import { Button } from '../../components/button';
+import Loader from '../../components/loader';
+import setAuthorizationToken from '../../utils';
+
 class EditUserForm extends React.Component {
   constructor(props) {
     super(props);
-
+    const { userId } = this.props;
     this.initialState = {
-      userId: Number(this.props.userId),
-      username: "",
-      newUserName: "",
-      role: "-1",
+      userId: Number(userId),
+      username: '',
+      newUserName: '',
+      role: '-1',
       errorMessage: null,
       successMessage: null,
       isLoading: false,
-      url: `/api/users/${this.props.userId}`,
+      url: `/api/users/${userId}`
     };
 
-    this.state = Object.assign({}, this.initialState);
+    this.state = { ...this.initialState };
   }
 
   componentDidMount() {
     const { url } = this.state;
     this.setState({ isLoading: true });
     axios({
-      method: "get",
-      url,
+      method: 'get',
+      url
     })
-      .then((response) => {
+      .then(response => {
         if (response.status === 200) {
           const { username, role_id } = response.data;
-          this.setState({ username, role: String(role_id), isLoading: false, newUserName: username});
+          this.setState({
+            username,
+            role: String(role_id),
+            isLoading: false,
+            newUserName: username
+          });
         }
       })
-      .catch((error) => {
+      .catch(error => {
         this.setState({
           errorMessage: error.response.data.message,
           successMessage: null,
-          isLoading: false,
+          isLoading: false
         });
       });
-  }
-
-  resetState() {
-    this.setState(this.initialState);
   }
 
   handleRoleChange(e) {
@@ -59,10 +61,6 @@ class EditUserForm extends React.Component {
     this.setState({ newUserName: e.target.value });
   }
 
-  clearForm() {
-    this.form.reset();
-  }
-
   handleUserUpdation(e) {
     e.preventDefault();
 
@@ -71,47 +69,47 @@ class EditUserForm extends React.Component {
     const { url, role, newUserName } = this.state;
 
     // TODO: Get these values from api
-    if (!role || !["1", "2"].includes(role)) {
+    if (!role || !['1', '2'].includes(role)) {
       this.setState({
         isSubmitting: false,
-        errorMessage: "Please select a valid role!",
-        successMessage: null,
+        errorMessage: 'Please select a valid role!',
+        successMessage: null
       });
       return;
     }
 
     axios({
-      method: "patch",
+      method: 'patch',
       url,
       data: {
         role,
         newUserName
-      },
+      }
     })
-      .then((response) => {
+      .then(response => {
         if (response.status === 200) {
           const { username, role_id, access_token } = response.data;
           if (access_token) {
-            localStorage.setItem("access_token", access_token);
+            localStorage.setItem('access_token', access_token);
 
             setAuthorizationToken(access_token);
           }
-          
+
           this.setState({
             username,
             role: String(role_id),
             isLoading: false,
             isSubmitting: false,
-            successMessage: "User has been updated",
-            errorMessage: null,
+            successMessage: 'User has been updated',
+            errorMessage: null
           });
         }
       })
-      .catch((error) => {
+      .catch(error => {
         this.setState({
           errorMessage: error.response.data.message,
           successMessage: null,
-          isSubmitting: false,
+          isSubmitting: false
         });
       });
   }
@@ -119,41 +117,44 @@ class EditUserForm extends React.Component {
   handleAlertDismiss(e) {
     e.preventDefault();
     this.setState({
-      successMessage: "",
-      errorMessage: "",
+      successMessage: '',
+      errorMessage: ''
     });
   }
 
+  clearForm() {
+    this.form.reset();
+  }
+
+  resetState() {
+    this.setState(this.initialState);
+  }
+
   render() {
-    const {
-      username,
-      isSubmitting,
-      errorMessage,
-      successMessage,
-      isLoading,
-      role,
-    } = this.state;
+    const { username, isSubmitting, errorMessage, successMessage, isLoading, role } = this.state;
     return (
       <div className="container h-75 text-center">
         <div className="row h-100 justify-content-center align-items-center">
           <form
             className="col-6"
             name="edit_user"
-            ref={(el) => (this.form = el)}
+            ref={el => {
+              this.form = el;
+            }}
           >
             {isLoading ? <Loader /> : null}
             {errorMessage ? (
               <Alert
                 type="danger"
                 message={errorMessage}
-                onClose={(e) => this.handleAlertDismiss(e)}
+                onClose={e => this.handleAlertDismiss(e)}
               />
             ) : null}
             {successMessage ? (
               <Alert
                 type="success"
                 message={successMessage}
-                onClose={(e) => this.handleAlertDismiss(e)}
+                onClose={e => this.handleAlertDismiss(e)}
               />
             ) : null}
             {!isLoading ? (
@@ -166,18 +167,18 @@ class EditUserForm extends React.Component {
                     id="username"
                     placeholder="Username"
                     value={username}
-                    autoFocus={true}
-                    required={true}
-                    disabled={true}
+                    autoFocus
+                    required
+                    disabled
                   />
                   <input
                     type="text"
                     className="form-control"
                     id="username"
                     placeholder={username}
-                    autoFocus={true}
-                    required={true}
-                    onChange={(e) => this.handleUserNameUpdation(e)}
+                    autoFocus
+                    required
+                    onChange={e => this.handleUserNameUpdation(e)}
                   />
                 </div>
                 <div className="form-group">
@@ -185,7 +186,7 @@ class EditUserForm extends React.Component {
                     className="form-control"
                     name="role"
                     value={role}
-                    onChange={(e) => this.handleRoleChange(e)}
+                    onChange={e => this.handleRoleChange(e)}
                   >
                     <option value="-1">Choose role</option>
                     <option value="1">Admin</option>
@@ -197,8 +198,8 @@ class EditUserForm extends React.Component {
                     <Button
                       size="lg"
                       type="primary"
-                      disabled={isSubmitting ? true : false}
-                      onClick={(e) => this.handleUserUpdation(e)}
+                      disabled={!!isSubmitting}
+                      onClick={e => this.handleUserUpdation(e)}
                       isSubmitting={isSubmitting}
                       text="Update"
                     />

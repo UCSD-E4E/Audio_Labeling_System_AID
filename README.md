@@ -20,43 +20,18 @@ Please install the following dependencies to run `Pyrenote` on your system:
 ### Clone the repository
 
 ```sh
-$ git clone https://github.com/UCSD-E4E/Audio_Labeling_System_AID.git
+$ git clone https://github.com/UCSD-E4E/Pyrenote.git
 $ cd audino
 ```
 
 **Note for Windows users**: Please configure git to handle line endings correctly as services might throw an error and not come up. You can do this by cloning the project this way:
 
 ```sh
-$ git clone https://github.com/UCSD-E4E/Audio_Labeling_System_AID.git --config core.autocrlf=input
+$ git clone https://github.com/UCSD-E4E/Pyrenote.git --config core.autocrlf=input
 ```
 
 ### NOTE BEFORE RUNNING THE DOCKER
 **Access [this link](https://drive.google.com/file/d/15y_j27Jn3aS2BKt17_3g8T2C07R5p3H5/view?usp=sharing) to get the Scripts.zip folder. Once you get it extract the files to audino/backend/venv/**
-
-### For Production
-
-You can either run the project on [default configuration](./docker-compose.prod.yml) or modify them to your need.
-**Note**: Before proceeding further, you might need to give docker `sudo` access or run the commands listed below as `sudo`.
-
-**To build the services, run:**
-
-```sh
-$ docker-compose -f docker-compose.prod.yml build
-```
-
-**To bring up the services, run:**
-
-```sh
-$ docker-compose -f docker-compose.prod.yml up
-```
-
-Then, in browser, go to [http://0.0.0.0/](http://0.0.0.0/) to view the application.
-
-**To bring down the services, run:**
-
-```sh
-$ docker-compose -f docker-compose.prod.yml down
-```
 
 ### For Development (Note this is the one we will test on and use)
 
@@ -64,13 +39,12 @@ Similar to `production` setup, you need to use development [configuration](./doc
 **Note**: Before proceeding further, you might need to give docker `sudo` access or run the commands listed below as `sudo`.
 
 **To build the services (do this when you frist start it), run:**
-
+**Note** Remember to cd into audino before starting
 ```sh
 $ docker-compose -f docker-compose.dev.yml build
 ```
 
 **To bring up the services, run:**
-**NOte** Remember to cd into audino before starting
 ```sh
 $ docker-compose -f docker-compose.dev.yml up
 ```
@@ -110,3 +84,30 @@ python upload_mass.py --username admin.test --is_marked_for_review True --audio_
 Make sure to have a folder with the audio data ready to be added. For testing purposes, get a folder with about 20 clips. 
 
 Once that runs you are ready to start testing!
+
+
+### For Production (Don't use on windows)
+
+You can either run the project on [default configuration](./docker-compose.prod.yml) or modify them to your need.
+**Note**: Before proceeding further, you might need to give docker `sudo` access or run the commands listed below as `sudo`.
+**Note** Remember to cd into audino before starting
+**To build the services, run:**
+
+```sh
+$ docker-compose -f docker-compose.prod.yml build
+```
+
+**To bring up the services, run:**
+
+```sh
+$ docker-compose -f docker-compose.prod.yml up
+```
+
+Then, in browser, go to [http://0.0.0.0/](http://0.0.0.0/) to view the application.
+
+**To bring down the services, run:**
+
+```sh
+$ docker-compose -f docker-compose.prod.yml down
+```
+

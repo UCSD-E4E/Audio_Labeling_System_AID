@@ -10,7 +10,10 @@ class Config(object):
         "DATABASE_URL"
     ) or "sqlite:///" + os.path.join(basedir, "app.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_ECHO = True if os.environ.get("SQLALCHEMY_ECHO") == "True" else False
+    if os.environ.get("SQLALCHEMY_ECHO") == "True":
+        SQLALCHEMY_ECHO = True
+    else:
+        SQLALCHEMY_ECHO = False
     REDIS_URL = os.environ.get("JWT_REDIS_STORE_URL", "")
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "")
     JWT_ACCESS_TOKEN_EXPIRES = os.environ.get(

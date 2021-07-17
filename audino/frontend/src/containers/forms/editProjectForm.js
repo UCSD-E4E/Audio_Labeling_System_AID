@@ -1,50 +1,44 @@
-import React from "react";
-import axios from "axios";
-import { withRouter } from "react-router";
-import { withStore } from "@spyna/react-store";
+import React from 'react';
+import axios from 'axios';
+import { withRouter } from 'react-router';
+import { withStore } from '@spyna/react-store';
 
-import Alert from "../../components/alert";
-import { Button } from "../../components/button";
+import Alert from '../../components/alert';
+import { Button } from '../../components/button';
 
 class EditProjectForm extends React.Component {
   constructor(props) {
     super(props);
-
+    const { projectId } = this.props;
     this.initialState = {
-      name: "",
-      errorMessage: "",
-      successMessage: "",
+      name: '',
+      errorMessage: '',
+      successMessage: '',
       isSubmitting: false,
-      url: `/api/projects/${this.props.projectId}`,
+      url: `/api/projects/${projectId}`
     };
 
-    this.state = Object.assign({}, this.initialState);
+    this.state = { ...this.initialState };
   }
 
   componentDidMount() {
     const { url } = this.state;
-    this.setState({ isLoading: true });
     axios({
-      method: "get",
-      url,
+      method: 'get',
+      url
     })
-      .then((response) => {
+      .then(response => {
         if (response.status === 200) {
-          const { name} = response.data;
-          this.setState({ name});
+          const { name } = response.data;
+          this.setState({ name });
         }
       })
-      .catch((error) => {
+      .catch(error => {
         this.setState({
           errorMessage: error.response.data.message,
-          successMessage: null,
-          isLoading: false,
+          successMessage: null
         });
       });
-  }
-
-  resetState() {
-    this.setState(this.initialState);
   }
 
   handleProjectNameChange(e) {
@@ -58,74 +52,76 @@ class EditProjectForm extends React.Component {
 
     const { name, url } = this.state;
 
-    if (!name || name === "") {
+    if (!name || name === '') {
       this.setState({
         isSubmitting: false,
-        errorMessage: "Please enter a valid project name!",
-        successMessage: null,
+        errorMessage: 'Please enter a valid project name!',
+        successMessage: null
       });
       return;
     }
 
     axios({
-      method: "patch",
-      url: url,
+      method: 'patch',
+      url,
       data: {
-        name,
-      },
+        name
+      }
     })
-      .then((response) => {
+      .then(response => {
         this.resetState();
         this.form.reset();
         if (response.status === 201) {
           this.setState({ successMessage: response.data.message });
         }
       })
-      .catch((error) => {
-        console.log(error.response);
+      .catch(error => {
+        console.error(error.response);
         this.setState({
           errorMessage: error.response.data.message,
-          successMessage: "",
-          isSubmitting: false,
+          successMessage: '',
+          isSubmitting: false
         });
       });
   }
 
+  resetState() {
+    this.setState(this.initialState);
+  }
+
   render() {
-    const { isSubmitting, errorMessage, successMessage } = this.state;
+    const { isSubmitting, errorMessage, successMessage, projectId } = this.state;
     return (
       <div className="container h-75 text-center">
         <div className="row h-100 justify-content-center align-items-center">
           <form
             className="col-6"
             name="new_project"
-            ref={(el) => (this.form = el)}
+            ref={el => {
+              this.form = el;
+            }}
           >
-            {errorMessage ? (
-              <Alert type="danger" message={errorMessage} />
-            ) : null}
-            {successMessage ? (
-              <Alert type="success" message={successMessage} />
-            ) : null}
+            {errorMessage ? <Alert type="danger" message={errorMessage} /> : null}
+            {successMessage ? <Alert type="success" message={successMessage} /> : null}
             <div className="form-group text-left">
               <input
                 type="text"
                 className="form-control"
                 id="username"
                 placeholder=""
-                value={this.props.projectId}
-                autoFocus={true}
-                required={true}
-                disabled={true}
+                value={projectId}
+                autoFocus
+                required
+                disabled
               />
               <input
                 type="text"
                 className="form-control"
                 id="project_name"
                 placeholder="Project Name"
-                autoFocus={true}
-                required={true}
-                onChange={(e) => this.handleProjectNameChange(e)}
+                autoFocus
+                required
+                onChange={e => this.handleProjectNameChange(e)}
               />
             </div>
             <div className="form-row">
@@ -133,8 +129,8 @@ class EditProjectForm extends React.Component {
                 <Button
                   size="lg"
                   type="primary"
-                  disabled={isSubmitting ? true : false}
-                  onClick={(e) => this.handleProjectCreation(e)}
+                  disabled={!!isSubmitting}
+                  onClick={e => this.handleProjectCreation(e)}
                   isSubmitting={isSubmitting}
                   text="Save"
                 />

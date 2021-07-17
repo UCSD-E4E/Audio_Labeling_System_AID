@@ -15,15 +15,15 @@ from backend.models import User
 
 from . import api
 
+
 @api.route("/users", methods=["POST"])
 @jwt_required
 def create_user():
-    # TODO: Make jwt user id based to expire user session if permissions are changed
     identity = get_jwt_identity()
     request_user = User.query.filter_by(username=identity["username"]).first()
     is_admin = True if request_user.role.role == "admin" else False
 
-    if is_admin == False:
+    if is_admin is False:
         return jsonify(message="Unauthorized access!"), 401
 
     if not request.is_json:
@@ -35,21 +35,25 @@ def create_user():
 
     if not username:
         return (
-            jsonify(message="Please provide your username!", type="USERNAME_MISSING"),
+            jsonify(message="Please provide your username!",
+                    type="USERNAME_MISSING"),
             400,
         )
     if not password:
         return (
-            jsonify(message="Please provide your password!", type="PASSWORD_MISSING"),
+            jsonify(message="Please provide your password!",
+                    type="PASSWORD_MISSING"),
             400,
         )
 
     if not role_id:
-        return (jsonify(message="Please provide your role!", type="ROLE_MISSING"), 400)
+        return (jsonify(message="Please provide your role!",
+                type="ROLE_MISSING"), 400)
 
     if role_id not in ["1", "2"]:
         return (
-            jsonify(message="Please assign correct role!", type="ROLE_INCORRECT"),
+            jsonify(message="Please assign correct role!",
+                    type="ROLE_INCORRECT"),
             400,
         )
 
@@ -62,42 +66,36 @@ def create_user():
     except Exception as e:
         if type(e) == sa.exc.IntegrityError:
             app.logger.info(f"User {username} already exists!")
-            return (jsonify(message="User already exists!", type="DUPLICATE_USER"), 409)
+            return (jsonify(message="User already exists!",
+                    type="DUPLICATE_USER"), 409)
         app.logger.error("Error creating user")
         app.logger.error(e)
         return jsonify(message="Error creating user!"), 500
 
     return jsonify(user_id=user.id, message="User has been created!"), 201
 
+
 @api.route("/users/no_auth", methods=["POST"])
 def create_user_no_auth():
     authNeeded = request.json.get("authNeeded", None)
     dont_make_admin = False
     if (not authNeeded):
-        dont_make_admin = True;
+        dont_make_admin = True
     app.logger.info("this far")
     print("hello?")
-    # TODO: Make jwt user id based to expire user session if permissions are changed
+
     identity = get_jwt_identity()
     app.logger.info(identity)
-    if (identity == None):
+    if (identity is None):
         if (authNeeded):
             return jsonify(message="Unauthorized access!"), 401
     else:
-        request_user = User.query.filter_by(username=identity["username"]).first()
+        request_user = User.query.filter_by(username=identity["username"]
+                                            ).first()
         is_admin = True if request_user.role.role == "admin" else False
         authNeeded = not(is_admin)
-    
-    print("hello?")
-    
-    
-    app.logger.info(authNeeded)
 
-    app.logger.info("this far")
-
-    
-
-    if authNeeded: #is_admin == False and authNeeded) or 
+    if authNeeded:  # is_admin is False and authNeeded) or
         return jsonify(message="Unauthorized access!"), 401
 
     if not request.is_json:
@@ -112,23 +110,27 @@ def create_user_no_auth():
 
     if not username:
         return (
-            jsonify(message="Please provide your username!", type="USERNAME_MISSING"),
+            jsonify(message="Please provide your username!",
+                    type="USERNAME_MISSING"),
             400,
         )
     if not password:
         return (
-            jsonify(message="Please provide your password!", type="PASSWORD_MISSING"),
+            jsonify(message="Please provide your password!",
+                    type="PASSWORD_MISSING"),
             400,
         )
 
     app.logger.info("this far")
 
     if not role_id:
-        return (jsonify(message="Please provide your role!", type="ROLE_MISSING"), 400)
+        return (jsonify(message="Please provide your role!",
+                type="ROLE_MISSING"), 400)
 
     if role_id not in ["1", "2"]:
         return (
-            jsonify(message="Please assign correct role!", type="ROLE_INCORRECT"),
+            jsonify(message="Please assign correct role!",
+                    type="ROLE_INCORRECT"),
             400,
         )
     app.logger.info("this far")
@@ -141,12 +143,14 @@ def create_user_no_auth():
     except Exception as e:
         if type(e) == sa.exc.IntegrityError:
             app.logger.info(f"User {username} already exists!")
-            return (jsonify(message="User already exists!", type="DUPLICATE_USER"), 409)
+            return (jsonify(message="User already exists!",
+                    type="DUPLICATE_USER"), 409)
         app.logger.error("Error creating user")
         app.logger.error(e)
         return jsonify(message="Error creating user!"), 500
 
     return jsonify(user_id=user.id, message="User has been created!"), 201
+
 
 @api.route("/users/<int:user_id>", methods=["GET"])
 @jwt_required
@@ -155,7 +159,7 @@ def fetch_user(user_id):
     request_user = User.query.filter_by(username=identity["username"]).first()
     is_admin = True if request_user.role.role == "admin" else False
 
-    if is_admin == False:
+    if is_admin is False:
         return jsonify(message="Unauthorized access!"), 401
 
     try:
@@ -164,7 +168,8 @@ def fetch_user(user_id):
         app.logger.error(f"No user exists with user_id: {user_id}")
         app.logger.error(e)
         return (
-            jsonify(message="No user exists with given user_id", user_id=user_id),
+            jsonify(message="No user exists with given user_id",
+                    user_id=user_id),
             404,
         )
 
@@ -186,7 +191,7 @@ def update_user(user_id):
     request_user = User.query.filter_by(username=identity["username"]).first()
     is_admin = True if request_user.role.role == "admin" else False
 
-    if is_admin == False:
+    if is_admin is False:
         return jsonify(message="Unauthorized access!"), 401
 
     if not request.is_json:
@@ -195,15 +200,16 @@ def update_user(user_id):
     role_id = request.json.get("role", None)
     newUserName = request.json.get("newUserName", None)
 
-
     if not role_id:
-        return (jsonify(message="Please provide your role!", type="ROLE_MISSING"), 400)
+        return (jsonify(message="Please provide your role!",
+                type="ROLE_MISSING"), 400)
 
     role_id = int(role_id)
-    # TODO: Make sure these ids exist in database ie. fetch them from database and check
+
     if role_id not in [1, 2]:
         return (
-            jsonify(message="Please assign correct role!", type="ROLE_INCORRECT"),
+            jsonify(message="Please assign correct role!",
+                    type="ROLE_INCORRECT"),
             400,
         )
 
@@ -221,9 +227,10 @@ def update_user(user_id):
             app.logger.info(request_user, user)
             is_admin = True if user.role.role == "admin" else False
             app.logger.info(user.id)
-            data = {"username": newUserName, "is_admin": is_admin, "user_id": user.id}#json.loads({"username": "hello", "is_admin": is_admin, "user_id": user.id})
+            data = {"username": newUserName, "is_admin": is_admin,
+                    "user_id": user.id}
             app.logger.info(data)
-            try: 
+            try:
                 access_token = create_access_token(
                     identity=data,
                     fresh=True,
@@ -238,7 +245,8 @@ def update_user(user_id):
             app.logger.info("here")
             access_jti = get_jti(encoded_token=access_token)
 
-            redis_client.set(access_jti, "false", app.config["JWT_ACCESS_TOKEN_EXPIRES"] * 1.2)
+            redis_client.set(access_jti, "false",
+                             app.config["JWT_ACCESS_TOKEN_EXPIRES"] * 1.2)
             return (
                 jsonify(
                     username=user.username,
@@ -264,6 +272,7 @@ def update_user(user_id):
         200,
     )
 
+
 @api.route("/users/<int:user_id>", methods=["DELETE"])
 @jwt_required
 def delete_user(user_id):
@@ -271,7 +280,7 @@ def delete_user(user_id):
     request_user = User.query.filter_by(username=identity["username"]).first()
     is_admin = True if request_user.role.role == "admin" else False
 
-    if is_admin == False:
+    if is_admin is False:
         return jsonify(message="Unauthorized access!"), 401
 
     if not request.is_json:
@@ -280,13 +289,15 @@ def delete_user(user_id):
     role_id = request.json.get("role", None)
 
     if not role_id:
-        return (jsonify(message="Please provide your role!", type="ROLE_MISSING"), 400)
+        return (jsonify(message="Please provide your role!",
+                type="ROLE_MISSING"), 400)
 
     role_id = int(role_id)
-    # TODO: Make sure these ids exist in database ie. fetch them from database and check
+
     if role_id not in [1, 2]:
         return (
-            jsonify(message="Please assign correct role!", type="ROLE_INCORRECT"),
+            jsonify(message="Please assign correct role!",
+                    type="ROLE_INCORRECT"),
             400,
         )
 
@@ -297,14 +308,14 @@ def delete_user(user_id):
             return jsonify(message="Atleast one admin should exist"), 400
 
         user = User.query.get(user_id)
-        if (request_user == user): 
+        if (request_user == user):
             return jsonify(message="CANNOT DELETE YOUR OWN USER"), 600
         db.session.delete(user)
         db.session.commit()
     except Exception as e:
         app.logger.error("No user found")
         app.logger.error(e)
-        #return jsonify(message="No user found!"), 404
+        # return jsonify(message="No user found!"), 404
 
     return (
         jsonify(
@@ -321,7 +332,7 @@ def fetch_all_users():
     request_user = User.query.filter_by(username=identity["username"]).first()
     is_admin = True if request_user.role.role == "admin" else False
 
-    if is_admin == False:
+    if is_admin is False:
         return jsonify(message="Unauthorized access"), 401
 
     try:

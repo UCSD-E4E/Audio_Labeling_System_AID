@@ -1,72 +1,74 @@
-import axios from "axios";
-import React from "react";
-import { Link } from "react-router-dom";
-import { withRouter } from "react-router";
-import { withStore } from "@spyna/react-store";
+import axios from 'axios';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'react-router';
+import { withStore } from '@spyna/react-store';
 
-import { setAuthorizationToken } from "../utils";
+import setAuthorizationToken from '../utils';
 
 class NavBar extends React.Component {
-  handleLogout(e) {
-    const { history } = this.props;
+  handleLogout() {
+    const { history, store } = this.props;
 
     axios({
-      method: "delete",
-      url: "/auth/logout",
+      method: 'delete',
+      url: '/auth/logout'
     })
       .then(() => {
-        localStorage.removeItem("access_token");
-        this.props.store.set("isUserLoggedIn", false);
-        this.props.store.set("isAdmin", false);
-        this.props.store.set("isLoading", false);
+        localStorage.removeItem('access_token');
+        store.set('isUserLoggedIn', false);
+        store.set('isAdmin', false);
+        store.set('isLoading', false);
 
         setAuthorizationToken(null);
 
-        history.push("/");
+        history.push('/');
       })
-      .catch((error) => {
-        // TODO: Show error logging out
-        console.log(error);
+      .catch(error => {
+        console.error(error);
       });
   }
 
   render() {
-    const isUserLoggedIn = this.props.store.get("isUserLoggedIn");
-    const isAdmin = this.props.store.get("isAdmin");
+    const { store } = this.props;
+    const isUserLoggedIn = store.get('isUserLoggedIn');
+    const isAdmin = store.get('isAdmin');
 
     return (
-      <nav class="navbar navbar-expand-md bg-dark navbar-dark">
+      <nav className="navbar navbar-expand-md bg-dark navbar-dark">
         <Link to="/" className="navbar-brand">
           Pyrenote
         </Link>
 
         <button
-          class="navbar-toggler"
+          className="navbar-toggler"
           type="button"
           data-toggle="collapse"
           data-target="#collapsibleNavbar"
         >
-          <span class="navbar-toggler-icon"></span>
+          <span className="navbar-toggler-icon" />
         </button>
 
         {isUserLoggedIn && (
-          <div class="collapse navbar-collapse" id="collapsibleNavbar">
-            <ul class="navbar-nav">
-              <li class="nav-item">
+          <div className="collapse navbar-collapse" id="collapsibleNavbar">
+            <ul className="navbar-nav">
+              <li className="nav-item">
                 <Link className="nav-link" to="/dashboard">
                   Dashboard
                 </Link>
               </li>
-              <li class="nav-item">
-                <Link className="nav-link" to="/admin">
-                  Admin Panel
-                </Link>
-              </li>
-              <li class="nav-item">
+              {isAdmin && (
+                <li className="nav-item">
+                  <Link className="nav-link" to="/admin">
+                    Admin Panel
+                  </Link>
+                </li>
+              )}
+              <li className="nav-item">
                 <button
                   type="button"
                   className="nav-link btn btn-link"
-                  onClick={(e) => this.handleLogout(e)}
+                  onClick={e => this.handleLogout(e)}
                 >
                   Logout
                 </button>

@@ -13,9 +13,11 @@ annotation_table = db.Table(
         nullable=False,
     ),
     db.Column(
-        "label_value_id", db.Integer(), db.ForeignKey("label_value.id"), nullable=False
+        "label_value_id", db.Integer(), db.ForeignKey("label_value.id"),
+        nullable=False
     ),
-    db.Column("created_at", db.DateTime(), nullable=False, default=db.func.now()),
+    db.Column("created_at", db.DateTime(), nullable=False,
+              default=db.func.now()),
     db.Column(
         "last_modified",
         db.DateTime(),
@@ -29,9 +31,12 @@ user_project_table = db.Table(
     "user_project",
     db.metadata,
     db.Column("id", db.Integer(), primary_key=True),
-    db.Column("user_id", db.Integer(), db.ForeignKey("user.id"), nullable=False),
-    db.Column("project_id", db.Integer(), db.ForeignKey("project.id"), nullable=False),
-    db.Column("created_at", db.DateTime(), nullable=False, default=db.func.now()),
+    db.Column("user_id", db.Integer(), db.ForeignKey("user.id"),
+              nullable=False),
+    db.Column("project_id", db.Integer(), db.ForeignKey("project.id"),
+              nullable=False),
+    db.Column("created_at", db.DateTime(), nullable=False,
+              default=db.func.now()),
     db.Column(
         "last_modified",
         db.DateTime(),
@@ -55,13 +60,11 @@ class Data(db.Model):
         "assigned_user_id", db.JSON(), nullable=False
     )
 
-    filename = db.Column("filename", db.String(100), nullable=False, unique=True)
+    filename = db.Column("filename", db.String(100), nullable=False,
+                         unique=True)
 
-    original_filename = db.Column("original_filename", db.String(100), nullable=False)
-
-    reference_transcription = db.Column(
-        "reference_transcription", db.Text(), nullable=True
-    )
+    original_filename = db.Column("original_filename", db.String(100),
+                                  nullable=False)
 
     is_marked_for_review = db.Column(
         "is_marked_for_review", db.Boolean(), nullable=False, default=False
@@ -83,7 +86,7 @@ class Data(db.Model):
     clip_length = db.Column("clip_length", db.Float(), nullable=False)
 
     project = db.relationship("Project")
-    #assigned_user = db.relationship("User")
+
     segmentations = db.relationship("Segmentation", backref="Data")
 
     def update_marked_review(self, marked_review):
@@ -97,17 +100,12 @@ class Data(db.Model):
             "original_filename": self.original_filename,
             "filename": self.filename,
             "url": f"/audios/{self.filename}",
-            "reference_transcription": self.reference_transcription,
             "is_marked_for_review": self.is_marked_for_review,
             "created_at": self.created_at,
             "last_modified": self.last_modified,
             "assigned_users": self.assigned_user_id,
             "sampling_rate": self.sampling_rate,
             "clip_length": self.clip_length,
-            #{    "id": self.assigned_user_id,
-                #"username": self.assigned_user.username,
-                #"role": self.assigned_user.role.role,
-            #},
         }
 
 
@@ -213,7 +211,8 @@ class Project(db.Model):
     name = db.Column("name", db.String(32), nullable=False, unique=True)
 
     creator_user_id = db.Column(
-        "creator_user_id", db.Integer(), db.ForeignKey("user.id"), nullable=False
+        "creator_user_id", db.Integer(), db.ForeignKey("user.id"),
+        nullable=False
     )
 
     api_key = db.Column("api_key", db.String(32), nullable=False, unique=True)
@@ -236,7 +235,7 @@ class Project(db.Model):
     data = db.relationship("Data", backref="Project")
     labels = db.relationship("Label", backref="Project")
     creator_user = db.relationship("User")
-    
+
     def set_name(self, newUsername):
         self.name = newUsername
 
@@ -246,7 +245,8 @@ class Role(db.Model):
 
     id = db.Column("id", db.Integer(), primary_key=True)
 
-    role = db.Column("role", db.String(30), index=True, unique=True, nullable=False)
+    role = db.Column("role", db.String(30), index=True, unique=True,
+                     nullable=False)
 
     created_at = db.Column(
         "created_at", db.DateTime(), nullable=False, default=db.func.now()
@@ -274,8 +274,6 @@ class Segmentation(db.Model):
 
     end_time = db.Column("end_time", db.Float(), nullable=False)
 
-    transcription = db.Column("transcription", db.Text(), nullable=True)
-
     created_at = db.Column(
         "created_at", db.DateTime(), nullable=False, default=db.func.now()
     )
@@ -293,7 +291,9 @@ class Segmentation(db.Model):
     )
 
     values = db.relationship(
-        "LabelValue", secondary=annotation_table, back_populates="segmentations",
+        "LabelValue",
+        secondary=annotation_table,
+        back_populates="segmentations",
     )
 
     def set_start_time(self, start_time):
@@ -301,9 +301,6 @@ class Segmentation(db.Model):
 
     def set_end_time(self, end_time):
         self.end_time = end_time
-
-    def set_transcription(self, transcription):
-        self.transcription = transcription
 
     def set_time_spent(self, time):
         app.logger.info(time)
@@ -316,7 +313,6 @@ class Segmentation(db.Model):
         return {
             "start_time": self.start_time,
             "end_time": self.end_time,
-            "transcription": self.transcription,
             "created_at": self.created_at,
             "last_modified": self.last_modified,
             "time_spent": self.time_spent

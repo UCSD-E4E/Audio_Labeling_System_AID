@@ -2,3 +2,13 @@
   width: 1.5rem;
   height: 1.5rem;
 }
+
+.buttons-container {
+  display: flex;
+  justify-content: space-evenly;
+  padding-bottom: 15px;
+}
+
+.buttons-container-item {
+  width: 45%;
+}

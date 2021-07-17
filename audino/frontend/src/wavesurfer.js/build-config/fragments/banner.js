@@ -14,8 +14,8 @@ const jsBanner = `${pckg.name} ${pckg.version} (${date})
 ${pckg.homepage}
 @license ${pckg.license}`;
 const libBanner = new webpack.BannerPlugin({
-    banner: jsBanner,
-    test: /\.js$/
+  banner: jsBanner,
+  test: /\.js$/
 });
 
 // plugin JS banner with copyright and version info
@@ -24,8 +24,8 @@ const jsPluginBanner = `${pckg.name} [name] plugin ${pckg.version} (${date})
 ${pckg.homepage}
 @license ${pckg.license}`;
 const pluginBanner = new webpack.BannerPlugin({
-    banner: jsPluginBanner,
-    test: /\.js$/
+  banner: jsPluginBanner,
+  test: /\.js$/
 });
 
 module.exports = { libBanner, pluginBanner };

@@ -1,4 +1,4 @@
-/*global MediaMetadata*/
+/* global MediaMetadata */
 
 /**
  * @typedef {Object} MediaSessionPluginParams
@@ -35,62 +35,62 @@
  * });
  */
 export default class MediaSessionPlugin {
-    /**
-     * MediaSession plugin definition factory
-     *
-     * This function must be used to create a plugin definition which can be
-     * used by wavesurfer to correctly instantiate the plugin.
-     *
-     * @param  {MediaSessionPluginParams} params parameters use to initialise the plugin
-     * @return {PluginDefinition} an object representing the plugin
-     */
-    static create(params) {
-        return {
-            name: 'mediasession',
-            deferInit: params && params.deferInit ? params.deferInit : false,
-            params: params,
-            instance: MediaSessionPlugin
-        };
+  /**
+   * MediaSession plugin definition factory
+   *
+   * This function must be used to create a plugin definition which can be
+   * used by wavesurfer to correctly instantiate the plugin.
+   *
+   * @param  {MediaSessionPluginParams} params parameters use to initialise the plugin
+   * @return {PluginDefinition} an object representing the plugin
+   */
+  static create(params) {
+    return {
+      name: 'mediasession',
+      deferInit: params && params.deferInit ? params.deferInit : false,
+      params,
+      instance: MediaSessionPlugin
+    };
+  }
+
+  constructor(params, ws) {
+    this.params = params;
+    this.wavesurfer = ws;
+
+    if ('mediaSession' in navigator) {
+      // update metadata
+      this.metadata = this.params.metadata;
+      this.update();
+
+      // update metadata when playback starts
+      this.wavesurfer.on('play', () => {
+        this.update();
+      });
+
+      // set playback action handlers
+      navigator.mediaSession.setActionHandler('play', () => {
+        this.wavesurfer.play();
+      });
+      navigator.mediaSession.setActionHandler('pause', () => {
+        this.wavesurfer.playPause();
+      });
+      navigator.mediaSession.setActionHandler('seekbackward', () => {
+        this.wavesurfer.skipBackward();
+      });
+      navigator.mediaSession.setActionHandler('seekforward', () => {
+        this.wavesurfer.skipForward();
+      });
     }
+  }
 
-    constructor(params, ws) {
-        this.params = params;
-        this.wavesurfer = ws;
+  init() {}
 
-        if ('mediaSession' in navigator) {
-            // update metadata
-            this.metadata = this.params.metadata;
-            this.update();
+  destroy() {}
 
-            // update metadata when playback starts
-            this.wavesurfer.on('play', () => {
-                this.update();
-            });
-
-            // set playback action handlers
-            navigator.mediaSession.setActionHandler('play', () => {
-                this.wavesurfer.play();
-            });
-            navigator.mediaSession.setActionHandler('pause', () => {
-                this.wavesurfer.playPause();
-            });
-            navigator.mediaSession.setActionHandler('seekbackward', () => {
-                this.wavesurfer.skipBackward();
-            });
-            navigator.mediaSession.setActionHandler('seekforward', () => {
-                this.wavesurfer.skipForward();
-            });
-        }
+  update() {
+    if (typeof MediaMetadata === typeof Function) {
+      // set metadata
+      navigator.mediaSession.metadata = new MediaMetadata(this.metadata);
     }
-
-    init() {}
-
-    destroy() {}
-
-    update() {
-        if (typeof MediaMetadata === typeof Function) {
-            // set metadata
-            navigator.mediaSession.metadata = new MediaMetadata(this.metadata);
-        }
-    }
+  }
 }

@@ -1,5 +1,5 @@
 /* eslint-env node */
 
 module.exports = {
-    devtool: 'source-map'
+  devtool: 'source-map'
 };

@@ -1,18 +1,17 @@
 import argparse
 import os
-import sys
-
+import prep_create_admin
+from backend.models import User, Role
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+msg = "Adds admin user to the application"
+parser = argparse.ArgumentParser(description=msg)
 
-from backend.models import User, Role
-
-parser = argparse.ArgumentParser(description="Adds admin user to the application")
-
-parser.add_argument("--username", type=str, help="Admin username", required=True)
-parser.add_argument("--password", type=str, help="Admin password", required=True)
+parser.add_argument("--username", type=str, help="Admin username",
+                    required=True)
+parser.add_argument("--password", type=str, help="Admin password",
+                    required=True)
 
 args = parser.parse_args()
 
@@ -27,11 +26,11 @@ password = args.password
 print(f"Creating account for {username}")
 
 try:
-    user = Role(id=1,role='admin')
+    user = Role(id=1, role='admin')
 
-    admin = Role(id=2,role='user')
+    admin = Role(id=2, role='user')
 
-    session.add_all([user, admin])   
+    session.add_all([user, admin])
     session.commit()
 except Exception as e:
     print("Error creating roles")

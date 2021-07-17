@@ -10,13 +10,8 @@
  * console.log(getId(prefix)); // logs 'foo-b5pors4ru6g'
  */
 export default function getId(prefix) {
-    if (prefix === undefined) {
-        prefix = 'wavesurfer_';
-    }
-    return (
-        prefix +
-        Math.random()
-            .toString(32)
-            .substring(2)
-    );
+  if (prefix === undefined) {
+    prefix = 'wavesurfer_';
+  }
+  return prefix + Math.random().toString(32).substring(2);
 }

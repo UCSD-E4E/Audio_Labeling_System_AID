@@ -17,7 +17,8 @@ def fetch_current_user_projects():
     identity = get_jwt_identity()
 
     try:
-        request_user = User.query.filter_by(username=identity["username"]).first()
+        request_user = User.query.filter_by(username=identity["username"]
+                                            ).first()
         response = list(
             [
                 {
@@ -47,25 +48,19 @@ def fetch_data_for_project(project_id):
     active = request.args.get("active", "pending", type=str)
 
     try:
-        request_user = User.query.filter_by(username=identity["username"]).first()
+        request_user = User.query.filter_by(username=identity["username"]
+                                            ).first()
         project = Project.query.get(project_id)
 
         if request_user not in project.users:
             return jsonify(message="Unauthorized access!"), 401
 
-        segmentations = db.session.query(Segmentation.data_id).distinct().subquery()
-        #Lets set big id to the {username.idenity, username.id}
-        #this would make it fast but aslo render serval data points
+        segmentations = db.session.query(Segmentation.data_id
+                                         ).distinct().subquery()
+
         data = {}
-        big_key = identity["username"]
-        #print(Data.assigned_user_id)
-        #for key in Data.assigned_user_id:
-        #    if request_user.id == Data.assigned_user_id[key]:
-        #        big_key = key
-        #        print(big_key, key)
         data["pending"] = (
             db.session.query(Data)
-            #.filter(request_user.id == Data.assigned_user_id[big_key])
             .filter(Data.project_id == project_id)
             .filter(Data.id.notin_(segmentations))
             .distinct()
@@ -74,7 +69,6 @@ def fetch_data_for_project(project_id):
 
         data["completed"] = (
             db.session.query(Data)
-            #.filter(request_user.id == Data.assigned_user_id[big_key])
             .filter(Data.project_id == project_id)
             .filter(Data.id.in_(segmentations))
             .distinct()
@@ -90,10 +84,10 @@ def fetch_data_for_project(project_id):
             project_id=project_id
         ).order_by(Data.last_modified.desc())
 
-        paginated_data = data[active].paginate(page, 10, False)
+        paginate_data = data[active].paginate(page, 10, False)
 
-        next_page = paginated_data.next_num if paginated_data.has_next else None
-        prev_page = paginated_data.prev_num if paginated_data.has_prev else None
+        next_page = paginate_data.next_num if paginate_data.has_next else None
+        prev_page = paginate_data.prev_num if paginate_data.has_prev else None
 
         response = list(
             [
@@ -101,14 +95,14 @@ def fetch_data_for_project(project_id):
                     "data_id": data_point.id,
                     "filename": data_point.filename,
                     "original_filename": data_point.original_filename,
-                    "created_on": "a date",#data_point.created_at.strftime("%B %d, %Y"),
-                    "reference_transcription": data_point.reference_transcription,
+                    "created_on": "a date",
+                    # data_point.created_at.strftime("%B %d, %Y"),
                     "is_marked_for_review": data_point.is_marked_for_review,
                     "number_of_segmentations": len(data_point.segmentations),
                     "sampling_rate": data_point.sampling_rate,
                     "clip_length": data_point.clip_length,
                 }
-                for data_point in paginated_data.items
+                for data_point in paginate_data.items
             ]
         )
         count_data = {key: value.count() for key, value in data.items()}
@@ -130,7 +124,9 @@ def fetch_data_for_project(project_id):
         200,
     )
 
-@api.route("/current_user/projects/<int:project_id>/data/<int:data_value>", methods=["GET"])
+
+@api.route("/current_user/projects/<int:project_id>/data/<int:data_value>",
+           methods=["GET"])
 @jwt_required
 def get_next_data(project_id, data_value):
     identity = get_jwt_identity()
@@ -139,20 +135,22 @@ def get_next_data(project_id, data_value):
     active = request.args.get("active", "completed", type=str)
 
     try:
-        request_user = User.query.filter_by(username=identity["username"]).first()
+        request_user = User.query.filter_by(username=identity["username"]
+                                            ).first()
         project = Project.query.get(project_id)
         project = Project.query.get(project_id)
 
         if request_user not in project.users:
             return jsonify(message="Unauthorized access!"), 401
 
-        segmentations = db.session.query(Segmentation.data_id).distinct().subquery()
-        #Lets set big id to the {username.idenity, username.id}
-        #this would make it fast but aslo render serval data points
+        segmentations = db.session.query(Segmentation.data_id
+                                         ).distinct().subquery()
+        # Lets set big id to the {username.idenity, username.id}
+        # this would make it fast but aslo render serval data points
         data = {}
         big_key = identity["username"]
-        #print(Data.assigned_user_id)
-        #for key in Data.assigned_user_id:
+        # print(Data.assigned_user_id)
+        # for key in Data.assigned_user_id:
         #    if request_user.id == Data.assigned_user_id[key]:
         #        big_key = key
         #        print(big_key, key)
@@ -176,18 +174,18 @@ def get_next_data(project_id, data_value):
 
         paginated_data_pending = data["pending"].paginate(page, 10, False)
         paginated_data_complet = data["completed"].paginate(page, 10, False)
-        paginated_data = paginated_data_pending
+        paginate_data = paginated_data_pending
 
         if (active != "pending"):
             for data_pt in paginated_data_complet.items:
                 if data_pt.id == data_value:
                     active = "completed"
-                    paginated_data = paginated_data_complet
+                    paginate_data = paginated_data_complet
                     break
             app.logger.info(active)
 
-        next_page = paginated_data.next_num if paginated_data.has_next else None
-        prev_page = paginated_data.prev_num if paginated_data.has_prev else None
+        next_page = paginate_data.next_num if paginate_data.has_next else None
+        prev_page = paginate_data.prev_num if paginate_data.has_prev else None
         response = list(
             [
                 {
@@ -195,13 +193,12 @@ def get_next_data(project_id, data_value):
                     "filename": data_point.filename,
                     "original_filename": data_point.original_filename,
                     "created_on": data_point.created_at.strftime("%B %d, %Y"),
-                    "reference_transcription": data_point.reference_transcription,
                     "is_marked_for_review": data_point.is_marked_for_review,
                     "number_of_segmentations": len(data_point.segmentations),
                     "sampling_rate": data_point.sampling_rate,
                     "clip_length": data_point.clip_length,
                 }
-                for data_point in paginated_data.items
+                for data_point in paginate_data.items
             ]
         )
         count_data = {key: value.count() for key, value in data.items()}
@@ -223,29 +220,36 @@ def get_next_data(project_id, data_value):
         200,
     )
 
-@api.route("/current_user/projects/<int:project_id>/data/<int:data_value>/page/<int:page_data>", methods=["GET"])
+
+@api.route(
+ "/current_user/projects/<int:project_id>/data/<int:dv>/page/<int:page_data>",
+ methods=["GET"]
+)
 @jwt_required
-def get_next_data2(project_id, data_value, page_data):
+def get_next_data2(project_id, dv, page_data):
+    data_value = dv
     identity = get_jwt_identity()
 
     page = page_data
     active = request.args.get("active", "completed", type=str)
 
     try:
-        request_user = User.query.filter_by(username=identity["username"]).first()
+        request_user = User.query.filter_by(username=identity["username"]
+                                            ).first()
         project = Project.query.get(project_id)
         project = Project.query.get(project_id)
 
         if request_user not in project.users:
             return jsonify(message="Unauthorized access!"), 401
 
-        segmentations = db.session.query(Segmentation.data_id).distinct().subquery()
-        #Lets set big id to the {username.idenity, username.id}
-        #this would make it fast but aslo render serval data points
+        segmentations = db.session.query(Segmentation.data_id
+                                         ).distinct().subquery()
+        # Lets set big id to the {username.idenity, username.id}
+        # this would make it fast but aslo render serval data points
         data = {}
         big_key = identity["username"]
-        #print(Data.assigned_user_id)
-        #for key in Data.assigned_user_id:
+        # print(Data.assigned_user_id)
+        # for key in Data.assigned_user_id:
         #    if request_user.id == Data.assigned_user_id[key]:
         #        big_key = key
         #        print(big_key, key)
@@ -269,18 +273,18 @@ def get_next_data2(project_id, data_value, page_data):
 
         paginated_data_pending = data["pending"].paginate(page, 10, False)
         paginated_data_complet = data["completed"].paginate(page, 10, False)
-        paginated_data = paginated_data_pending
+        paginate_data = paginated_data_pending
 
         if (active != "pending"):
             for data_pt in paginated_data_complet.items:
                 if data_pt.id == data_value:
                     active = "completed"
-                    paginated_data = paginated_data_complet
+                    paginate_data = paginated_data_complet
                     break
             app.logger.info(active)
 
-        next_page = paginated_data.next_num if paginated_data.has_next else None
-        prev_page = paginated_data.prev_num if paginated_data.has_prev else None
+        next_page = paginate_data.next_num if paginate_data.has_next else None
+        prev_page = paginate_data.prev_num if paginate_data.has_prev else None
         response = list(
             [
                 {
@@ -288,13 +292,12 @@ def get_next_data2(project_id, data_value, page_data):
                     "filename": data_point.filename,
                     "original_filename": data_point.original_filename,
                     "created_on": data_point.created_at.strftime("%B %d, %Y"),
-                    "reference_transcription": data_point.reference_transcription,
                     "is_marked_for_review": data_point.is_marked_for_review,
                     "number_of_segmentations": len(data_point.segmentations),
                     "sampling_rate": data_point.sampling_rate,
                     "clip_length": data_point.clip_length,
                 }
-                for data_point in paginated_data.items
+                for data_point in paginate_data.items
             ]
         )
         count_data = {key: value.count() for key, value in data.items()}
@@ -316,29 +319,35 @@ def get_next_data2(project_id, data_value, page_data):
         200,
     )
 
-@api.route("/current_user/unknown/projects/<int:project_id>/data/<int:data_value>", methods=["GET"])
+
+@api.route(
+ "/current_user/unknown/projects/<int:project_id>/data/<int:data_value>",
+ methods=["GET"]
+)
 @jwt_required
 def get_next_data_unknown(project_id, data_value):
     identity = get_jwt_identity()
 
-    #page = request.args.get("page", 1, type=int)
+    # page = request.args.get("page", 1, type=int)
     active = request.args.get("active", "completed", type=str)
 
     try:
-        request_user = User.query.filter_by(username=identity["username"]).first()
+        request_user = User.query.filter_by(username=identity["username"]
+                                            ).first()
         project = Project.query.get(project_id)
         project = Project.query.get(project_id)
 
         if request_user not in project.users:
             return jsonify(message="Unauthorized access!"), 401
 
-        segmentations = db.session.query(Segmentation.data_id).distinct().subquery()
-        #Lets set big id to the {username.idenity, username.id}
-        #this would make it fast but aslo render serval data points
+        segmentations = db.session.query(Segmentation.data_id
+                                         ).distinct().subquery()
+        # Lets set big id to the {username.idenity, username.id}
+        # this would make it fast but aslo render serval data points
         data = {}
         big_key = identity["username"]
-        #print(Data.assigned_user_id)
-        #for key in Data.assigned_user_id:
+        # print(Data.assigned_user_id)
+        # for key in Data.assigned_user_id:
         #    if request_user.id == Data.assigned_user_id[key]:
         #        big_key = key
         #        print(big_key, key)
@@ -358,9 +367,6 @@ def get_next_data_unknown(project_id, data_value):
             .order_by(Data.last_modified.desc())
         )
 
-        #paginated_data_pending = data["pending"].paginate(1, 10, False)
-        #paginated_data_complet = data["completed"].paginate(1, 10, False)
-        #paginated_data = paginated_data_pending
         active = "unknown"
         if (active != "pending"):
             for data_pt in data["completed"]:
@@ -375,32 +381,23 @@ def get_next_data_unknown(project_id, data_value):
         test_page = 1
         while (page == -1):
             paginated_data = data[active].paginate(test_page, 10, False)
-            next_page = paginated_data.next_num if paginated_data.has_next else None
-            prev_page = paginated_data.prev_num if paginated_data.has_prev else None
+            next = paginated_data.next_num if paginated_data.has_next else None
+            prev = paginated_data.prev_num if paginated_data.has_prev else None
             for data_point in paginated_data.items:
                 if (data_point.id == data_value):
                     response = list(
                         [
                             {
                                 "data_id": data_point.id,
-                                "filename": data_point.filename,
-                                "original_filename": data_point.original_filename,
-                                "created_on": data_point.created_at.strftime("%B %d, %Y"),
-                                "reference_transcription": data_point.reference_transcription,
-                                "is_marked_for_review": data_point.is_marked_for_review,
-                                "number_of_segmentations": len(data_point.segmentations),
-                                "sampling_rate": data_point.sampling_rate,
-                                "clip_length": data_point.clip_length,
                             }
                             for data_point in paginated_data.items
                         ]
                     )
-                    
                     return (
                         jsonify(
                             data=response,
-                            next_page=next_page,
-                            prev_page=prev_page,
+                            next_page=next,
+                            prev_page=prev,
                             page=test_page,
                             active=active,
                         ),
@@ -408,26 +405,14 @@ def get_next_data_unknown(project_id, data_value):
                     )
             if (next_page is not None):
                 test_page += 1
-            #else:
-            #    app.logger.log("data doesn't exist")
-            #    raise "Data Doesn't Exist"
     except Exception as e:
         message = "Error fetching all data points"
         app.logger.error(message)
         app.logger.error(e)
         return jsonify(message=message), 501
-
-    return (
-        jsonify(
-            data=response,
-            count=count_data,
-            next_page=next_page,
-            prev_page=prev_page,
-            page=page,
-            active=active,
-        ),
-        200,
-    )
+    message = f"Error data value `{data_value}` not in project"
+    app.logger.error(message)
+    return jsonify(message=message), 404
 
 
 @api.route("/current_user/projects/get_all", methods=["GET"])
@@ -435,23 +420,25 @@ def get_next_data_unknown(project_id, data_value):
 def get_all():
     identity = get_jwt_identity()
     app.logger.info("made it this far")
-    #page = request.args.get("page", 1, type=int)
-    #active = request.args.get("active", "completed", type=str)
+    # page = request.args.get("page", 1, type=int)
+    # active = request.args.get("active", "completed", type=str)
 
     try:
-        request_user = User.query.filter_by(username=identity["username"]).first()
+        request_user = User.query.filter_by(username=identity["username"]
+                                            ).first()
 
-        #debug to improve secuiuty 
-        #if request_user not in project.users:
+        # debug to improve secuiuty
+        # if request_user not in project.users:
         #    return jsonify(message="Unauthorized access!"), 401
 
-        segmentations = db.session.query(Segmentation.data_id).distinct().subquery()
-        #Lets set big id to the {username.idenity, username.id}
-        #this would make it fast but aslo render serval data points
+        segmentations = db.session.query(Segmentation.data_id
+                                         ).distinct().subquery()
+        # Lets set big id to the {username.idenity, username.id}
+        # this would make it fast but aslo render serval data points
         data = {}
         big_key = identity["username"]
-        #print(Data.assigned_user_id)
-        #for key in Data.assigned_user_id:
+        # print(Data.assigned_user_id)
+        # for key in Data.assigned_user_id:
         #    if request_user.id == Data.assigned_user_id[key]:
         #        big_key = key
         #        print(big_key, key)
@@ -463,41 +450,19 @@ def get_all():
             .all()
         )
         app.logger.info("made it this far")
-        #data["completed"] = (
-        #    db.session.query(Data)
-        #    .filter(Data.id.in_(segmentations))
-        #    .distinct()
-        #    .order_by(Data.last_modified.desc())
-        #)
-
         paginated_data = data["pending"]
-        #app.logger.info(paginated_data)
-        #paginated_data_complet = data["completed"].paginate(False)
-        #paginated_data = paginated_data_pending
-
-        #if (active != "pending"):
-        #    for data_pt in paginated_data_complet.items:
-        #        if data_pt.id == data_value:
-        #            active = "completed"
-        #            paginated_data = paginated_data_complet
-        #            break
-        #    app.logger.info(active)
-
-        #next_page = paginated_data.next_num if paginated_data.has_next else None
-        #prev_page = paginated_data.prev_num if paginated_data.has_prev else None
         response = []
         for data_point in paginated_data:
-            date = ""  
-            if data_point.created_at != None:
+            date = ""
+            if data_point.created_at is not None:
                 date = data_point.created_at.strftime("%B %d, %Y")
-            else: 
+            else:
                 date = "N/a"
             new_data = {
                     "data_id": data_point.id,
                     "filename": data_point.filename,
                     "original_filename": data_point.original_filename,
-                    "created_on": date, 
-                    "reference_transcription": data_point.reference_transcription,
+                    "created_on": date,
                     "is_marked_for_review": data_point.is_marked_for_review,
                     "number_of_segmentations": len(data_point.segmentations),
                     "sampling_rate": data_point.sampling_rate,
@@ -508,7 +473,7 @@ def get_all():
         count_data = {}
         count = 0
         for key in data:
-            count+=1
+            count += 1
             count_data[key] = count
     except Exception as e:
         message = "Error fetching all data points"
@@ -523,4 +488,3 @@ def get_all():
         ),
         200,
     )
-
